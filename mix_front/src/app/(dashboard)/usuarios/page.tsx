@@ -83,13 +83,13 @@ export default function PaginaUsuarios() {
       <div>
         <h1 className="text-xl font-semibold mb-4">Funcionários</h1>
 
-        {carregandoLista && <p className="text-sm text-black/60">Carregando...</p>}
+        {carregandoLista && <p className="text-sm text-black/60 dark:text-white/60">Carregando...</p>}
         {erroLista && <p className="text-sm text-marca-vermelho">{erroLista}</p>}
 
         {!carregandoLista && !erroLista && (
           <table className="w-full text-sm border-collapse max-w-2xl">
             <thead>
-              <tr className="text-left border-b border-black/10">
+              <tr className="text-left border-b border-black/10 dark:border-white/10">
                 <th className="py-2 pr-4">Nome</th>
                 <th className="py-2 pr-4">Usuário</th>
                 <th className="py-2 pr-4">Papel</th>
@@ -97,7 +97,7 @@ export default function PaginaUsuarios() {
             </thead>
             <tbody>
               {usuarios.map((u) => (
-                <tr key={u.id} className="border-b border-black/5">
+                <tr key={u.id} className="border-b border-black/5 dark:border-white/5">
                   <td className="py-2 pr-4">{u.nome_completo}</td>
                   <td className="py-2 pr-4">{u.usuario}</td>
                   <td className="py-2 pr-4">{u.papel}</td>
@@ -120,7 +120,7 @@ export default function PaginaUsuarios() {
               required
               value={nomeCompleto}
               onChange={(e) => setNomeCompleto(e.target.value)}
-              className="w-full rounded border border-black/15 px-3 py-2 text-sm text-black bg-white focus:outline-none focus:ring-2 focus:ring-marca-azul"
+              className="w-full rounded border border-black/15 dark:border-white/15 px-3 py-2 text-sm text-black dark:text-white bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-marca-azul"
             />
           </div>
           <div>
@@ -133,7 +133,7 @@ export default function PaginaUsuarios() {
               required
               value={nomeUsuario}
               onChange={(e) => setNomeUsuario(e.target.value)}
-              className="w-full rounded border border-black/15 px-3 py-2 text-sm text-black bg-white focus:outline-none focus:ring-2 focus:ring-marca-azul"
+              className="w-full rounded border border-black/15 dark:border-white/15 px-3 py-2 text-sm text-black dark:text-white bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-marca-azul"
             />
           </div>
           <div>
@@ -147,7 +147,7 @@ export default function PaginaUsuarios() {
               minLength={6}
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
-              className="w-full rounded border border-black/15 px-3 py-2 text-sm text-black bg-white focus:outline-none focus:ring-2 focus:ring-marca-azul"
+              className="w-full rounded border border-black/15 dark:border-white/15 px-3 py-2 text-sm text-black dark:text-white bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-marca-azul"
             />
           </div>
           <div>
@@ -158,7 +158,7 @@ export default function PaginaUsuarios() {
               id="novo-papel"
               value={papel}
               onChange={(e) => setPapel(e.target.value)}
-              className="w-full rounded border border-black/15 px-3 py-2 text-sm text-black bg-white focus:outline-none focus:ring-2 focus:ring-marca-azul"
+              className="w-full rounded border border-black/15 dark:border-white/15 px-3 py-2 text-sm text-black dark:text-white bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-marca-azul"
             >
               {PAPEIS.map((p) => (
                 <option key={p.valor} value={p.valor}>

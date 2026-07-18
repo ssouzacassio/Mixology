@@ -61,7 +61,7 @@ export default function LayoutPainel({
             <Link
               key={item.href}
               href={item.href}
-              className="flex items-center gap-2 rounded px-3 py-2 text-sm font-medium text-black/70 hover:bg-marca-vermelho/10 hover:text-marca-vermelho transition-colors"
+              className="flex items-center gap-2 rounded px-3 py-2 text-sm font-medium text-black/70 dark:text-white/70 hover:bg-marca-vermelho/10 hover:text-marca-vermelho transition-colors"
             >
               <item.Icone size={18} strokeWidth={1.75} />
               {item.label}
@@ -70,7 +70,7 @@ export default function LayoutPainel({
           {usuario?.papel === "admin" && (
             <Link
               href={ITEM_ADMIN.href}
-              className="flex items-center gap-2 rounded px-3 py-2 text-sm font-medium text-black/70 hover:bg-marca-vermelho/10 hover:text-marca-vermelho transition-colors"
+              className="flex items-center gap-2 rounded px-3 py-2 text-sm font-medium text-black/70 dark:text-white/70 hover:bg-marca-vermelho/10 hover:text-marca-vermelho transition-colors"
             >
               <ITEM_ADMIN.Icone size={18} strokeWidth={1.75} />
               {ITEM_ADMIN.label}
@@ -79,7 +79,10 @@ export default function LayoutPainel({
         </nav>
         <div className="mt-auto pt-4 border-t border-marca-azul/20">
           {usuario && (
-            <Link href="/perfil" className="block text-xs text-black/60 mb-2 hover:underline">
+            <Link
+              href="/perfil"
+              className="block text-xs text-black/60 dark:text-white/60 mb-2 hover:underline"
+            >
               {usuario.nome_completo} · {usuario.papel}
             </Link>
           )}

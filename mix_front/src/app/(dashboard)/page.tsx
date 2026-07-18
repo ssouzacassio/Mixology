@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Martini, Package, ShoppingCart, Users } from "lucide-react";
 
 import { obterUsuario } from "@/lib/api";
+import BotaoTema from "@/components/BotaoTema";
 
 const SECOES = [
   {
@@ -45,7 +46,10 @@ export default function PaginaMenu() {
 
   return (
     <div>
-      <h1 className="text-xl font-semibold mb-6">Menu</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-xl font-semibold">Menu</h1>
+        <BotaoTema />
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {secoes.map((secao) => (
           <Link
@@ -56,7 +60,7 @@ export default function PaginaMenu() {
             <secao.Icone size={28} strokeWidth={1.5} className="text-marca-vermelho" />
             <div>
               <p className="font-medium">{secao.label}</p>
-              <p className="text-sm text-black/60">{secao.descricao}</p>
+              <p className="text-sm text-black/60 dark:text-white/60">{secao.descricao}</p>
             </div>
           </Link>
         ))}

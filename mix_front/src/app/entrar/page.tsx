@@ -39,7 +39,7 @@ export default function PaginaEntrar() {
     <div className="min-h-screen flex items-center justify-center bg-marca-azul/5 p-4">
       <form
         onSubmit={aoEnviar}
-        className="w-full max-w-sm bg-white text-black rounded-lg shadow p-8 flex flex-col gap-4"
+        className="w-full max-w-sm bg-white dark:bg-zinc-900 text-black dark:text-white rounded-lg shadow p-8 flex flex-col gap-4"
       >
         <Image
           src="/marca/logo-colorida.png"
@@ -61,7 +61,7 @@ export default function PaginaEntrar() {
             required
             value={usuario}
             onChange={(e) => setUsuario(e.target.value)}
-            className="w-full rounded border border-black/15 px-3 py-2 text-sm text-black bg-white focus:outline-none focus:ring-2 focus:ring-marca-azul"
+            className="w-full rounded border border-black/15 dark:border-white/15 px-3 py-2 text-sm text-black dark:text-white bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-marca-azul"
           />
         </div>
 
@@ -75,7 +75,7 @@ export default function PaginaEntrar() {
             required
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
-            className="w-full rounded border border-black/15 px-3 py-2 text-sm text-black bg-white focus:outline-none focus:ring-2 focus:ring-marca-azul"
+            className="w-full rounded border border-black/15 dark:border-white/15 px-3 py-2 text-sm text-black dark:text-white bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-marca-azul"
           />
         </div>
 

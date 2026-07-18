@@ -78,7 +78,7 @@ export default function PaginaPerfil() {
     <div className="max-w-md flex flex-col gap-8">
       <div>
         <h1 className="text-xl font-semibold mb-1">Meu perfil</h1>
-        <p className="text-sm text-black/60 mb-4">Papel: {papel}</p>
+        <p className="text-sm text-black/60 dark:text-white/60 mb-4">Papel: {papel}</p>
 
         <form onSubmit={aoSalvarPerfil} className="flex flex-col gap-3">
           <div>
@@ -90,7 +90,7 @@ export default function PaginaPerfil() {
               required
               value={nomeCompleto}
               onChange={(e) => setNomeCompleto(e.target.value)}
-              className="w-full rounded border border-black/15 px-3 py-2 text-sm text-black bg-white focus:outline-none focus:ring-2 focus:ring-marca-azul"
+              className="w-full rounded border border-black/15 dark:border-white/15 px-3 py-2 text-sm text-black dark:text-white bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-marca-azul"
             />
           </div>
           <div>
@@ -103,7 +103,7 @@ export default function PaginaPerfil() {
               required
               value={nomeUsuario}
               onChange={(e) => setNomeUsuario(e.target.value)}
-              className="w-full rounded border border-black/15 px-3 py-2 text-sm text-black bg-white focus:outline-none focus:ring-2 focus:ring-marca-azul"
+              className="w-full rounded border border-black/15 dark:border-white/15 px-3 py-2 text-sm text-black dark:text-white bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-marca-azul"
             />
           </div>
 
@@ -133,7 +133,7 @@ export default function PaginaPerfil() {
               required
               value={senhaAtual}
               onChange={(e) => setSenhaAtual(e.target.value)}
-              className="w-full rounded border border-black/15 px-3 py-2 text-sm text-black bg-white focus:outline-none focus:ring-2 focus:ring-marca-azul"
+              className="w-full rounded border border-black/15 dark:border-white/15 px-3 py-2 text-sm text-black dark:text-white bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-marca-azul"
             />
           </div>
           <div>
@@ -147,7 +147,7 @@ export default function PaginaPerfil() {
               minLength={6}
               value={senhaNova}
               onChange={(e) => setSenhaNova(e.target.value)}
-              className="w-full rounded border border-black/15 px-3 py-2 text-sm text-black bg-white focus:outline-none focus:ring-2 focus:ring-marca-azul"
+              className="w-full rounded border border-black/15 dark:border-white/15 px-3 py-2 text-sm text-black dark:text-white bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-marca-azul"
             />
           </div>
 
