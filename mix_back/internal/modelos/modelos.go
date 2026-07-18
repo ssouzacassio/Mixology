@@ -84,7 +84,9 @@ func (r *ItemReceita) BeforeCreate(tx *gorm.DB) error {
 type Caixa struct {
 	ID              uuid.UUID  `gorm:"type:uuid;primaryKey" json:"id"`
 	AbertoPor       uuid.UUID  `gorm:"type:uuid;not null" json:"aberto_por"`
+	AbertoPorNome   string     `gorm:"not null;default:''" json:"aberto_por_nome"`
 	FechadoPor      *uuid.UUID `gorm:"type:uuid" json:"fechado_por,omitempty"`
+	FechadoPorNome  string     `json:"fechado_por_nome,omitempty"`
 	ValorAbertura   float64    `gorm:"not null;default:0" json:"valor_abertura"`
 	ValorFechamento *float64   `json:"valor_fechamento,omitempty"`
 	Status          string     `gorm:"not null;default:aberto" json:"status"`

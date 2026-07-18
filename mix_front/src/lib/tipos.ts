@@ -17,7 +17,9 @@ export type Mesa = {
 export type Caixa = {
   id: string;
   aberto_por: string;
+  aberto_por_nome: string;
   fechado_por?: string;
+  fechado_por_nome?: string;
   valor_abertura: number;
   valor_fechamento?: number;
   status: string;

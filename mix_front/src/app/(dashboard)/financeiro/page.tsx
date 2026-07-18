@@ -69,8 +69,10 @@ export default function PaginaFinanceiro() {
           <thead>
             <tr className="text-left border-b border-black/10 dark:border-white/10">
               <th className="py-2 pr-4">Status</th>
+              <th className="py-2 pr-4">Aberto por</th>
               <th className="py-2 pr-4">Abertura</th>
               <th className="py-2 pr-4">Valor abertura</th>
+              <th className="py-2 pr-4">Fechado por</th>
               <th className="py-2 pr-4">Fechamento</th>
               <th className="py-2 pr-4">Valor fechamento</th>
             </tr>
@@ -89,8 +91,10 @@ export default function PaginaFinanceiro() {
                     {c.status === "aberto" ? "Aberto" : "Fechado"}
                   </span>
                 </td>
+                <td className="py-2 pr-4">{c.aberto_por_nome}</td>
                 <td className="py-2 pr-4">{formatarHorario(c.aberto_em)}</td>
                 <td className="py-2 pr-4">{formatarReal(c.valor_abertura)}</td>
+                <td className="py-2 pr-4">{c.fechado_por_nome || "—"}</td>
                 <td className="py-2 pr-4">{formatarHorario(c.fechado_em)}</td>
                 <td className="py-2 pr-4">{formatarReal(c.valor_fechamento)}</td>
               </tr>

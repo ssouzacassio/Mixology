@@ -24,11 +24,18 @@ func (m *Manipulador) AbrirCaixa(c *gin.Context) {
 		return
 	}
 
+	var usuario modelos.Usuario
+	if err := m.DB.First(&usuario, "id = ?", usuarioUUID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "falha ao identificar usuário"})
+		return
+	}
+
 	var entrada entradaAberturaCaixa
 	_ = c.ShouldBindJSON(&entrada)
 
 	caixa := modelos.Caixa{
 		AbertoPor:     usuarioUUID,
+		AbertoPorNome: usuario.NomeCompleto,
 		ValorAbertura: entrada.ValorAbertura,
 		Status:        "aberto",
 	}
@@ -119,18 +126,23 @@ func (m *Manipulador) FecharCaixa(c *gin.Context) {
 	}
 
 	var entrada entradaFechamentoCaixa
-	if err := c.ShouldBindJSON(&entrada); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+	_ = c.ShouldBindJSON(&entrada)
 
 	usuarioID, _ := c.Get("usuario_id")
 	usuarioUUID, _ := usuarioID.(uuid.UUID)
+
+	var usuario modelos.Usuario
+	if err := m.DB.First(&usuario, "id = ?", usuarioUUID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "falha ao identificar usuário"})
+		return
+	}
+
 	agora := time.Now()
 
 	caixa.Status = "fechado"
 	caixa.ValorFechamento = &entrada.ValorFechamento
 	caixa.FechadoPor = &usuarioUUID
+	caixa.FechadoPorNome = usuario.NomeCompleto
 	caixa.FechadoEm = &agora
 
 	if err := m.DB.Save(&caixa).Error; err != nil {
