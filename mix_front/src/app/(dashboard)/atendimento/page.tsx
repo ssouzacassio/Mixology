@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Table2, Trash2, Undo2 } from "lucide-react";
+import { Plus, Trash2, Undo2 } from "lucide-react";
 
 import { apiFetch, obterUsuario } from "@/lib/api";
 import type { Caixa, Mesa } from "@/lib/tipos";
@@ -10,6 +10,7 @@ import { ROTULO_STATUS_MESA } from "@/lib/mesaStatus";
 import ModalVenda from "@/components/ModalVenda";
 import ModalComandasMesa from "@/components/ModalComandasMesa";
 import SinalMesa from "@/components/SinalMesa";
+import IconeMesa from "@/components/IconeMesa";
 
 const CAMPO_CLASSE =
   "w-full rounded border border-black/15 dark:border-white/15 px-3 py-2 text-sm text-black dark:text-white bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-marca-azul";
@@ -160,7 +161,7 @@ export default function PaginaAtendimento() {
                   className="w-full rounded-lg border border-black/10 dark:border-white/10 bg-white dark:bg-zinc-900 p-4 text-sm font-medium hover:border-marca-vermelho/40 hover:shadow-sm transition-all"
                 >
                   <span className="flex flex-col items-center gap-1">
-                    <Table2 size={20} className="text-black/25 dark:text-white/25" />
+                    <IconeMesa />
                     <span className="flex items-center gap-1.5">
                       <SinalMesa status={mesa.status} />
                       {mesa.nome}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Lock, LockOpen, Table2 } from "lucide-react";
+import { Lock, LockOpen } from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
 import type { Caixa, Mesa, Venda } from "@/lib/tipos";
@@ -10,6 +10,7 @@ import Modal from "@/components/Modal";
 import ModalFecharConta from "@/components/ModalFecharConta";
 import ModalComandasCaixa from "@/components/ModalComandasCaixa";
 import SinalMesa from "@/components/SinalMesa";
+import IconeMesa from "@/components/IconeMesa";
 
 const LABELS_PAGAMENTO: Record<string, string> = {
   dinheiro: "Dinheiro",
@@ -241,7 +242,7 @@ export default function PaginaCaixa() {
                     className="w-32 rounded-lg border border-black/10 dark:border-white/10 bg-white dark:bg-zinc-900 p-4 text-sm font-medium transition-all disabled:cursor-default enabled:hover:border-marca-vermelho/40 enabled:hover:shadow-sm enabled:cursor-pointer"
                   >
                     <span className="flex flex-col items-center gap-1">
-                      <Table2 size={20} className="text-black/25 dark:text-white/25" />
+                      <IconeMesa />
                       <span className="flex items-center gap-1.5">
                         <SinalMesa status={mesa.status} />
                         {mesa.nome}
