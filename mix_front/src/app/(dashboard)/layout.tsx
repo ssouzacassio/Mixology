@@ -4,15 +4,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ConciergeBell, LayoutGrid, Martini, Menu, Package, ShoppingCart, Wallet, X } from "lucide-react";
+import { ConciergeBell, Martini, Menu, Package, ShoppingCart, Wallet, X } from "lucide-react";
 
 import { encerrarSessao, obterToken, obterUsuario, type Usuario } from "@/lib/api";
 import { aoMudarOrientacao, obterOrientacaoAtual, type OrientacaoMenu } from "@/lib/layoutPref";
 import BarraPesquisa from "@/components/BarraPesquisa";
 import MenuUsuarios, { OPCOES_USUARIOS } from "@/components/MenuUsuarios";
+import IconeNavMenu from "@/components/IconeNavMenu";
 
 const ITENS_NAVEGACAO = [
-  { href: "/", label: "Menu", Icone: LayoutGrid },
+  { href: "/", label: "Menu", Icone: IconeNavMenu },
   { href: "/caixa", label: "Caixa", Icone: ShoppingCart },
   { href: "/atendimento", label: "Atendimento", Icone: ConciergeBell },
   { href: "/produtos", label: "Produtos", Icone: Martini },
