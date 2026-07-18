@@ -54,17 +54,17 @@ export default function PaginaMenu() {
           <BotaoTema />
         </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {secoes.map((secao) => (
           <Link
             key={secao.href}
             href={secao.href}
-            className="rounded-lg border border-marca-azul/20 p-6 flex flex-col items-start gap-3 hover:border-marca-vermelho/40 hover:shadow-sm transition-all"
+            className="rounded-lg border border-marca-azul/20 p-3 flex flex-col items-start gap-1.5 hover:border-marca-vermelho/40 hover:shadow-sm transition-all"
           >
-            <secao.Icone size={28} strokeWidth={1.5} className="text-marca-vermelho" />
+            <secao.Icone size={20} strokeWidth={1.5} className="text-marca-vermelho" />
             <div>
-              <p className="font-medium">{secao.label}</p>
-              <p className="text-sm text-black/60 dark:text-white/60">{secao.descricao}</p>
+              <p className="text-sm font-medium">{secao.label}</p>
+              <p className="text-xs text-black/60 dark:text-white/60">{secao.descricao}</p>
             </div>
           </Link>
         ))}
