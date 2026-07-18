@@ -8,6 +8,7 @@ import type { Caixa, Mesa, Venda } from "@/lib/tipos";
 import { ROTULO_STATUS_MESA } from "@/lib/mesaStatus";
 import Modal from "@/components/Modal";
 import ModalFecharConta from "@/components/ModalFecharConta";
+import ModalComandasCaixa from "@/components/ModalComandasCaixa";
 import SinalMesa from "@/components/SinalMesa";
 
 const LABELS_PAGAMENTO: Record<string, string> = {
@@ -39,6 +40,7 @@ export default function PaginaCaixa() {
   const [resumo, setResumo] = useState<Record<string, number>>({});
   const [contasAbertas, setContasAbertas] = useState<Venda[]>([]);
   const [contaSelecionada, setContaSelecionada] = useState<Venda | null>(null);
+  const [mesaComandas, setMesaComandas] = useState<Mesa | null>(null);
   const [mesas, setMesas] = useState<Mesa[]>([]);
 
   useEffect(() => {
@@ -106,8 +108,18 @@ export default function PaginaCaixa() {
 
   function aoClicarMesa(mesa: Mesa) {
     if (mesa.status !== "consumacao") return;
-    const conta = contasAbertas.find((v) => v.mesa_id === mesa.id);
-    if (conta) setContaSelecionada(conta);
+    const contas = contasAbertas.filter((v) => v.mesa_id === mesa.id);
+    if (contas.length === 0) return;
+    if (contas.length === 1) {
+      setContaSelecionada(contas[0]);
+      return;
+    }
+    setMesaComandas(mesa);
+  }
+
+  function aoEscolherComanda(venda: Venda) {
+    setMesaComandas(null);
+    setContaSelecionada(venda);
   }
 
   async function aoAbrirCaixa() {
@@ -216,10 +228,11 @@ export default function PaginaCaixa() {
             )}
             <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3 max-w-3xl">
               {mesas.map((mesa) => {
-                const conta =
+                const contas =
                   mesa.status === "consumacao"
-                    ? contasAbertas.find((v) => v.mesa_id === mesa.id)
-                    : undefined;
+                    ? contasAbertas.filter((v) => v.mesa_id === mesa.id)
+                    : [];
+                const totalMesa = contas.reduce((soma, c) => soma + c.total, 0);
                 return (
                   <button
                     key={mesa.id}
@@ -234,15 +247,21 @@ export default function PaginaCaixa() {
                     <span className="block text-xs font-normal text-black/60 dark:text-white/60 mt-1">
                       {ROTULO_STATUS_MESA[mesa.status] ?? mesa.status}
                     </span>
-                    {conta && (
+                    {contas.length > 0 && (
                       <>
-                        {conta.nome_comanda && (
+                        {contas.length === 1 ? (
+                          contas[0].nome_comanda && (
+                            <span className="block text-xs text-black/60 dark:text-white/60">
+                              {contas[0].nome_comanda}
+                            </span>
+                          )
+                        ) : (
                           <span className="block text-xs text-black/60 dark:text-white/60">
-                            {conta.nome_comanda}
+                            {contas.length} comandas
                           </span>
                         )}
                         <span className="block text-xs font-semibold mt-1">
-                          {formatarReal(conta.total)}
+                          {formatarReal(totalMesa)}
                         </span>
                       </>
                     )}
@@ -277,6 +296,15 @@ export default function PaginaCaixa() {
             </button>
           </div>
         </Modal>
+      )}
+
+      {mesaComandas && (
+        <ModalComandasCaixa
+          mesa={mesaComandas}
+          comandas={contasAbertas.filter((v) => v.mesa_id === mesaComandas.id)}
+          aoFechar={() => setMesaComandas(null)}
+          aoEscolher={aoEscolherComanda}
+        />
       )}
 
       {contaSelecionada && (

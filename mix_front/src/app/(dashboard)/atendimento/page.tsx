@@ -8,6 +8,7 @@ import { apiFetch, obterUsuario } from "@/lib/api";
 import type { Caixa, Mesa } from "@/lib/tipos";
 import { ROTULO_STATUS_MESA } from "@/lib/mesaStatus";
 import ModalVenda from "@/components/ModalVenda";
+import ModalComandasMesa from "@/components/ModalComandasMesa";
 import SinalMesa from "@/components/SinalMesa";
 
 const CAMPO_CLASSE =
@@ -22,7 +23,9 @@ export default function PaginaAtendimento() {
 
   const [mesas, setMesas] = useState<Mesa[]>([]);
   const [novaMesa, setNovaMesa] = useState("");
+  const [mesaComandas, setMesaComandas] = useState<Mesa | null>(null);
   const [mesaSelecionada, setMesaSelecionada] = useState<Mesa | null>(null);
+  const [vendaSelecionada, setVendaSelecionada] = useState<string | null>(null);
   const [erro, setErro] = useState("");
 
   useEffect(() => {
@@ -74,11 +77,25 @@ export default function PaginaAtendimento() {
       return;
     }
 
+    if (mesa.status === "consumacao") {
+      setMesaComandas(mesa);
+      return;
+    }
+
+    setVendaSelecionada(null);
     setMesaSelecionada(mesa);
+  }
+
+  function aoEscolherComanda(vendaId: string | null) {
+    if (!mesaComandas) return;
+    setVendaSelecionada(vendaId);
+    setMesaSelecionada(mesaComandas);
+    setMesaComandas(null);
   }
 
   async function aoVendaConcluida() {
     setMesaSelecionada(null);
+    setVendaSelecionada(null);
     await carregarMesas();
   }
 
@@ -184,10 +201,22 @@ export default function PaginaAtendimento() {
         </div>
       )}
 
+      {mesaComandas && (
+        <ModalComandasMesa
+          mesa={mesaComandas}
+          aoFechar={() => setMesaComandas(null)}
+          aoEscolher={aoEscolherComanda}
+        />
+      )}
+
       {mesaSelecionada && (
         <ModalVenda
           mesa={mesaSelecionada}
-          aoFechar={() => setMesaSelecionada(null)}
+          vendaId={vendaSelecionada}
+          aoFechar={() => {
+            setMesaSelecionada(null);
+            setVendaSelecionada(null);
+          }}
           aoConcluir={aoVendaConcluida}
         />
       )}

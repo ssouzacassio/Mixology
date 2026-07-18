@@ -19,15 +19,18 @@ type entradaItemVenda struct {
 
 type entradaVenda struct {
 	MesaID      uuid.UUID          `json:"mesa_id" binding:"required"`
+	VendaID     *uuid.UUID         `json:"venda_id"`
 	NomeComanda string             `json:"nome_comanda"`
 	Itens       []entradaItemVenda `json:"itens" binding:"required,min=1"`
 }
 
-// CriarVenda lança produtos na comanda aberta de uma mesa (cria a comanda
-// se ainda não existir uma), soma ao total e abate na hora o estoque dos
-// insumos usados na receita de cada produto — quem lança é o atendimento.
-// A comanda só é fechada (forma de pagamento definida) pelo caixa, em
-// FecharVenda.
+// CriarVenda lança produtos numa comanda de uma mesa. Se vier venda_id,
+// lança na comanda aberta específica; se não vier, sempre cria uma
+// comanda nova (uma mesa pode ter várias comandas abertas ao mesmo
+// tempo, ex: contas separadas por grupo). Soma ao total e abate na hora
+// o estoque dos insumos usados na receita de cada produto — quem lança
+// é o atendimento. A comanda só é fechada (forma de pagamento definida)
+// pelo caixa, em FecharVenda.
 func (m *Manipulador) CriarVenda(c *gin.Context) {
 	var entrada entradaVenda
 	if err := c.ShouldBindJSON(&entrada); err != nil {
@@ -51,9 +54,15 @@ func (m *Manipulador) CriarVenda(c *gin.Context) {
 			return errors.New("mesa não encontrada")
 		}
 
-		erroComanda := tx.Where("mesa_id = ? AND caixa_id = ? AND status = ?", entrada.MesaID, caixa.ID, "aberta").
-			First(&venda).Error
-		if erroComanda != nil {
+		if entrada.VendaID != nil {
+			if err := tx.Where("id = ? AND mesa_id = ? AND caixa_id = ? AND status = ?",
+				*entrada.VendaID, entrada.MesaID, caixa.ID, "aberta").First(&venda).Error; err != nil {
+				return errors.New("comanda não encontrada ou já foi fechada")
+			}
+			if entrada.NomeComanda != "" {
+				venda.NomeComanda = entrada.NomeComanda
+			}
+		} else {
 			mesaID := entrada.MesaID
 			venda = modelos.Venda{
 				CaixaID:     caixa.ID,
@@ -65,8 +74,6 @@ func (m *Manipulador) CriarVenda(c *gin.Context) {
 			if err := tx.Create(&venda).Error; err != nil {
 				return err
 			}
-		} else if entrada.NomeComanda != "" {
-			venda.NomeComanda = entrada.NomeComanda
 		}
 
 		var totalAdicionado float64
@@ -181,10 +188,19 @@ func (m *Manipulador) FecharVenda(c *gin.Context) {
 		}
 
 		if venda.MesaID != nil {
-			if err := tx.Model(&modelos.Mesa{}).
-				Where("id = ?", *venda.MesaID).
-				Update("status", "finalizada").Error; err != nil {
+			var comandasRestantes int64
+			if err := tx.Model(&modelos.Venda{}).
+				Where("mesa_id = ? AND caixa_id = ? AND status = ?", *venda.MesaID, venda.CaixaID, "aberta").
+				Count(&comandasRestantes).Error; err != nil {
 				return err
+			}
+
+			if comandasRestantes == 0 {
+				if err := tx.Model(&modelos.Mesa{}).
+					Where("id = ?", *venda.MesaID).
+					Update("status", "finalizada").Error; err != nil {
+					return err
+				}
 			}
 		}
 

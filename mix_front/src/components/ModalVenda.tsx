@@ -12,10 +12,12 @@ function formatarReal(valor: number) {
 
 export default function ModalVenda({
   mesa,
+  vendaId,
   aoFechar,
   aoConcluir,
 }: {
   mesa: Mesa;
+  vendaId: string | null;
   aoFechar: () => void;
   aoConcluir: () => void;
 }) {
@@ -32,12 +34,12 @@ export default function ModalVenda({
         const dadosProdutos = (await apiFetch("/api/produtos")) as Produto[];
         setProdutos(dadosProdutos.filter((p) => p.ativo));
 
-        const dadosVendas = (await apiFetch("/api/vendas")) as Venda[];
-        const comandaAtual = dadosVendas.find(
-          (v) => v.status === "aberta" && v.mesa_id === mesa.id
-        );
-        if (comandaAtual?.nome_comanda) {
-          setNomeComanda(comandaAtual.nome_comanda);
+        if (vendaId) {
+          const dadosVendas = (await apiFetch("/api/vendas")) as Venda[];
+          const comandaAtual = dadosVendas.find((v) => v.id === vendaId);
+          if (comandaAtual?.nome_comanda) {
+            setNomeComanda(comandaAtual.nome_comanda);
+          }
         }
       } catch (erroCapturado) {
         setErro(erroCapturado instanceof Error ? erroCapturado.message : "Falha ao carregar produtos");
@@ -45,7 +47,7 @@ export default function ModalVenda({
         setCarregando(false);
       }
     })();
-  }, [mesa.id]);
+  }, [mesa.id, vendaId]);
 
   function definirQuantidade(produtoId: string, quantidade: number) {
     setQuantidades((atual) => ({ ...atual, [produtoId]: Math.max(0, quantidade) }));
@@ -73,6 +75,7 @@ export default function ModalVenda({
         method: "POST",
         body: JSON.stringify({
           mesa_id: mesa.id,
+          venda_id: vendaId ?? undefined,
           nome_comanda: nomeComanda.trim(),
           itens: itensSelecionados.map((item) => ({
             produto_id: item.produto.id,
@@ -89,7 +92,10 @@ export default function ModalVenda({
   }
 
   return (
-    <Modal titulo={`Lançar pedido — ${mesa.nome}`} aoFechar={aoFechar}>
+    <Modal
+      titulo={`${vendaId ? "Lançar pedido" : "Nova comanda"} — ${mesa.nome}`}
+      aoFechar={aoFechar}
+    >
       {carregando && <p className="text-sm text-black/60 dark:text-white/60">Carregando produtos...</p>}
 
       {!carregando && produtos.length === 0 && (
