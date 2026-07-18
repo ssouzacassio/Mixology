@@ -8,15 +8,7 @@ import { apiFetch, obterUsuario } from "@/lib/api";
 import type { Caixa, Mesa } from "@/lib/tipos";
 import { ROTULO_STATUS_MESA } from "@/lib/mesaStatus";
 import ModalVenda from "@/components/ModalVenda";
-
-const CLASSES_STATUS_MESA: Record<string, string> = {
-  livre:
-    "border-green-600/30 bg-green-600/10 text-green-700 dark:text-green-500 hover:bg-green-600/20",
-  ocupada:
-    "border-amber-600/30 bg-amber-600/10 text-amber-700 dark:text-amber-500 hover:bg-amber-600/20",
-  consumacao:
-    "border-marca-vermelho/30 bg-marca-vermelho/10 text-marca-vermelho hover:bg-marca-vermelho/20",
-};
+import SinalMesa from "@/components/SinalMesa";
 
 const CAMPO_CLASSE =
   "w-full rounded border border-black/15 dark:border-white/15 px-3 py-2 text-sm text-black dark:text-white bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-marca-azul";
@@ -128,13 +120,13 @@ export default function PaginaAtendimento() {
               <div key={mesa.id} className="relative">
                 <button
                   onClick={() => aoClicarMesa(mesa)}
-                  className={`w-full rounded-lg border p-4 text-sm font-medium transition-colors ${
-                    CLASSES_STATUS_MESA[mesa.status] ?? CLASSES_STATUS_MESA.ocupada
-                  }`}
+                  className="w-full rounded-lg border border-black/10 dark:border-white/10 bg-white dark:bg-zinc-900 p-4 text-sm font-medium hover:border-marca-vermelho/40 hover:shadow-sm transition-all"
                 >
-                  {mesa.nome}
-                  <br />
-                  <span className="text-xs font-normal">
+                  <span className="flex items-center justify-center gap-1.5">
+                    <SinalMesa status={mesa.status} />
+                    {mesa.nome}
+                  </span>
+                  <span className="block text-xs font-normal text-black/60 dark:text-white/60 mt-1">
                     {ROTULO_STATUS_MESA[mesa.status] ?? mesa.status}
                   </span>
                 </button>

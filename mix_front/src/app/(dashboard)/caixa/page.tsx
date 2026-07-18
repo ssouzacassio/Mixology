@@ -8,19 +8,13 @@ import type { Caixa, Mesa, Venda } from "@/lib/tipos";
 import { ROTULO_STATUS_MESA } from "@/lib/mesaStatus";
 import Modal from "@/components/Modal";
 import ModalFecharConta from "@/components/ModalFecharConta";
+import SinalMesa from "@/components/SinalMesa";
 
 const LABELS_PAGAMENTO: Record<string, string> = {
   dinheiro: "Dinheiro",
   debito: "Cartão débito",
   credito: "Cartão crédito",
   pix: "Pix",
-};
-
-const CLASSES_STATUS_MESA: Record<string, string> = {
-  livre: "border-green-600/30 bg-green-600/10 text-green-700 dark:text-green-500",
-  ocupada: "border-amber-600/30 bg-amber-600/10 text-amber-700 dark:text-amber-500",
-  consumacao:
-    "border-marca-vermelho/30 bg-marca-vermelho/10 text-marca-vermelho hover:bg-marca-vermelho/20 cursor-pointer",
 };
 
 function formatarReal(valor: number) {
@@ -231,20 +225,19 @@ export default function PaginaCaixa() {
                     key={mesa.id}
                     onClick={() => aoClicarMesa(mesa)}
                     disabled={mesa.status !== "consumacao"}
-                    className={`w-full rounded-lg border p-4 text-sm font-medium transition-colors disabled:cursor-default ${
-                      CLASSES_STATUS_MESA[mesa.status] ?? CLASSES_STATUS_MESA.ocupada
-                    }`}
+                    className="w-full rounded-lg border border-black/10 dark:border-white/10 bg-white dark:bg-zinc-900 p-4 text-sm font-medium transition-all disabled:cursor-default enabled:hover:border-marca-vermelho/40 enabled:hover:shadow-sm enabled:cursor-pointer"
                   >
-                    {mesa.nome}
-                    <br />
-                    <span className="text-xs font-normal">
+                    <span className="flex items-center justify-center gap-1.5">
+                      <SinalMesa status={mesa.status} />
+                      {mesa.nome}
+                    </span>
+                    <span className="block text-xs font-normal text-black/60 dark:text-white/60 mt-1">
                       {ROTULO_STATUS_MESA[mesa.status] ?? mesa.status}
                     </span>
                     {conta && (
-                      <>
-                        <br />
-                        <span className="text-xs font-semibold">{formatarReal(conta.total)}</span>
-                      </>
+                      <span className="block text-xs font-semibold mt-1">
+                        {formatarReal(conta.total)}
+                      </span>
                     )}
                   </button>
                 );
