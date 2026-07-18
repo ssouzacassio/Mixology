@@ -235,9 +235,16 @@ export default function PaginaCaixa() {
                       {ROTULO_STATUS_MESA[mesa.status] ?? mesa.status}
                     </span>
                     {conta && (
-                      <span className="block text-xs font-semibold mt-1">
-                        {formatarReal(conta.total)}
-                      </span>
+                      <>
+                        {conta.nome_comanda && (
+                          <span className="block text-xs text-black/60 dark:text-white/60">
+                            {conta.nome_comanda}
+                          </span>
+                        )}
+                        <span className="block text-xs font-semibold mt-1">
+                          {formatarReal(conta.total)}
+                        </span>
+                      </>
                     )}
                   </button>
                 );

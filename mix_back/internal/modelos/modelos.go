@@ -108,6 +108,7 @@ type Venda struct {
 	CaixaID        uuid.UUID   `gorm:"type:uuid;not null" json:"caixa_id"`
 	MesaID         *uuid.UUID  `gorm:"type:uuid" json:"mesa_id,omitempty"`
 	Mesa           *Mesa       `gorm:"foreignKey:MesaID;constraint:OnDelete:SET NULL" json:"mesa,omitempty"`
+	NomeComanda    string      `json:"nome_comanda,omitempty"`
 	CriadoPor      uuid.UUID   `gorm:"type:uuid;not null" json:"criado_por"`
 	Total          float64     `gorm:"not null;default:0" json:"total"`
 	FormaPagamento string      `gorm:"not null" json:"forma_pagamento"`

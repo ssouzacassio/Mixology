@@ -3,7 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 
 import { apiFetch } from "@/lib/api";
-import type { Mesa, Produto } from "@/lib/tipos";
+import type { Mesa, Produto, Venda } from "@/lib/tipos";
 import Modal from "./Modal";
 
 function formatarReal(valor: number) {
@@ -22,21 +22,30 @@ export default function ModalVenda({
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [quantidades, setQuantidades] = useState<Record<string, number>>({});
+  const [nomeComanda, setNomeComanda] = useState("");
   const [erro, setErro] = useState("");
   const [enviando, setEnviando] = useState(false);
 
   useEffect(() => {
     (async () => {
       try {
-        const dados = (await apiFetch("/api/produtos")) as Produto[];
-        setProdutos(dados.filter((p) => p.ativo));
+        const dadosProdutos = (await apiFetch("/api/produtos")) as Produto[];
+        setProdutos(dadosProdutos.filter((p) => p.ativo));
+
+        const dadosVendas = (await apiFetch("/api/vendas")) as Venda[];
+        const comandaAtual = dadosVendas.find(
+          (v) => v.status === "aberta" && v.mesa_id === mesa.id
+        );
+        if (comandaAtual?.nome_comanda) {
+          setNomeComanda(comandaAtual.nome_comanda);
+        }
       } catch (erroCapturado) {
         setErro(erroCapturado instanceof Error ? erroCapturado.message : "Falha ao carregar produtos");
       } finally {
         setCarregando(false);
       }
     })();
-  }, []);
+  }, [mesa.id]);
 
   function definirQuantidade(produtoId: string, quantidade: number) {
     setQuantidades((atual) => ({ ...atual, [produtoId]: Math.max(0, quantidade) }));
@@ -64,6 +73,7 @@ export default function ModalVenda({
         method: "POST",
         body: JSON.stringify({
           mesa_id: mesa.id,
+          nome_comanda: nomeComanda.trim(),
           itens: itensSelecionados.map((item) => ({
             produto_id: item.produto.id,
             quantidade: item.quantidade,
@@ -90,6 +100,19 @@ export default function ModalVenda({
 
       {!carregando && produtos.length > 0 && (
         <form onSubmit={aoConfirmar} className="flex flex-col gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1" htmlFor="nome-comanda">
+              Nome da comanda (opcional)
+            </label>
+            <input
+              id="nome-comanda"
+              value={nomeComanda}
+              onChange={(e) => setNomeComanda(e.target.value)}
+              placeholder="Ex: nome do cliente"
+              className="w-full rounded border border-black/15 dark:border-white/15 px-3 py-2 text-sm text-black dark:text-white bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-marca-azul"
+            />
+          </div>
+
           <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
             {produtos.map((produto) => (
               <div

@@ -18,8 +18,9 @@ type entradaItemVenda struct {
 }
 
 type entradaVenda struct {
-	MesaID uuid.UUID          `json:"mesa_id" binding:"required"`
-	Itens  []entradaItemVenda `json:"itens" binding:"required,min=1"`
+	MesaID      uuid.UUID          `json:"mesa_id" binding:"required"`
+	NomeComanda string             `json:"nome_comanda"`
+	Itens       []entradaItemVenda `json:"itens" binding:"required,min=1"`
 }
 
 // CriarVenda lança produtos na comanda aberta de uma mesa (cria a comanda
@@ -55,14 +56,17 @@ func (m *Manipulador) CriarVenda(c *gin.Context) {
 		if erroComanda != nil {
 			mesaID := entrada.MesaID
 			venda = modelos.Venda{
-				CaixaID:   caixa.ID,
-				MesaID:    &mesaID,
-				CriadoPor: usuarioUUID,
-				Status:    "aberta",
+				CaixaID:     caixa.ID,
+				MesaID:      &mesaID,
+				NomeComanda: entrada.NomeComanda,
+				CriadoPor:   usuarioUUID,
+				Status:      "aberta",
 			}
 			if err := tx.Create(&venda).Error; err != nil {
 				return err
 			}
+		} else if entrada.NomeComanda != "" {
+			venda.NomeComanda = entrada.NomeComanda
 		}
 
 		var totalAdicionado float64

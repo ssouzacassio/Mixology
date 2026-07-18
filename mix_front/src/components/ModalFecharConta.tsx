@@ -65,7 +65,12 @@ export default function ModalFecharConta({
   }
 
   return (
-    <Modal titulo={`Fechar conta — ${venda.mesa?.nome ?? "Mesa"}`} aoFechar={aoFechar}>
+    <Modal
+      titulo={`Fechar conta — ${venda.mesa?.nome ?? "Mesa"}${
+        venda.nome_comanda ? ` (${venda.nome_comanda})` : ""
+      }`}
+      aoFechar={aoFechar}
+    >
       <div className="flex flex-col gap-1 mb-4 max-h-48 overflow-y-auto">
         {venda.itens.map((item) => (
           <div key={item.id} className="flex justify-between text-sm">

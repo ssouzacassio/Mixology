@@ -39,6 +39,7 @@ export type Venda = {
   caixa_id: string;
   mesa_id?: string;
   mesa?: Mesa;
+  nome_comanda?: string;
   total: number;
   forma_pagamento: string;
   status: string;
