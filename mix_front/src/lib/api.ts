@@ -33,10 +33,6 @@ export function encerrarSessao() {
   localStorage.removeItem(CHAVE_USUARIO);
 }
 
-export function atualizarUsuarioSalvo(usuario: Usuario) {
-  localStorage.setItem(CHAVE_USUARIO, JSON.stringify(usuario));
-}
-
 export async function apiFetch(caminho: string, opcoes: RequestInit = {}) {
   const token = obterToken();
   const cabecalhos = new Headers(opcoes.headers);

@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { LayoutGrid, Martini, Package, ShoppingCart, UserRound, Users } from "lucide-react";
+import { LayoutGrid, Martini, Package, ShoppingCart, Users } from "lucide-react";
 
 import { encerrarSessao, obterToken, obterUsuario, type Usuario } from "@/lib/api";
 import { aoMudarOrientacao, obterOrientacaoAtual, type OrientacaoMenu } from "@/lib/layoutPref";
@@ -15,7 +15,6 @@ const ITENS_NAVEGACAO = [
   { href: "/caixa", label: "Caixa", Icone: ShoppingCart },
   { href: "/produtos", label: "Produtos", Icone: Martini },
   { href: "/estoque", label: "Estoque", Icone: Package },
-  { href: "/perfil", label: "Perfil", Icone: UserRound },
 ];
 
 const ITEM_ADMIN = { href: "/usuarios", label: "Usuários", Icone: Users };
@@ -81,13 +80,18 @@ export default function LayoutPainel({
               </Link>
             ))}
           </nav>
-          {usuario && (
+          {usuario && usuario.papel === "admin" && (
             <Link
-              href="/perfil"
+              href="/usuarios"
               className="text-xs text-black/60 dark:text-white/60 hover:underline whitespace-nowrap"
             >
               {usuario.nome_completo} · {usuario.papel}
             </Link>
+          )}
+          {usuario && usuario.papel !== "admin" && (
+            <span className="text-xs text-black/60 dark:text-white/60 whitespace-nowrap">
+              {usuario.nome_completo} · {usuario.papel}
+            </span>
           )}
           <button onClick={aoSair} className="text-sm text-marca-vermelho hover:underline">
             Sair
@@ -129,13 +133,18 @@ export default function LayoutPainel({
           )}
         </nav>
         <div className="mt-auto pt-4 border-t border-marca-azul/20">
-          {usuario && (
+          {usuario && usuario.papel === "admin" && (
             <Link
-              href="/perfil"
+              href="/usuarios"
               className="block text-xs text-black/60 dark:text-white/60 mb-2 hover:underline"
             >
               {usuario.nome_completo} · {usuario.papel}
             </Link>
+          )}
+          {usuario && usuario.papel !== "admin" && (
+            <p className="text-xs text-black/60 dark:text-white/60 mb-2">
+              {usuario.nome_completo} · {usuario.papel}
+            </p>
           )}
           <button
             onClick={aoSair}

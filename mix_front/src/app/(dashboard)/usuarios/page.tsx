@@ -9,7 +9,9 @@ import BarraPesquisa from "@/components/BarraPesquisa";
 
 const PAPEIS = [
   { valor: "atendente", label: "Atendente" },
-  { valor: "estoquista", label: "Estoquista" },
+  { valor: "caixa", label: "Caixa" },
+  { valor: "bartender", label: "Bartender" },
+  { valor: "gerente", label: "Gerente" },
   { valor: "admin", label: "Admin" },
 ];
 

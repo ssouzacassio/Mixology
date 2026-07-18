@@ -59,8 +59,6 @@ func main() {
 	autorizado.POST("/vendas", m.CriarVenda)
 
 	autorizado.GET("/usuarios", protecao.ExigirPapel("admin"), m.ListarUsuarios)
-	autorizado.PUT("/usuarios/perfil", m.AtualizarPerfil)
-	autorizado.PUT("/usuarios/senha", m.AlterarSenha)
 	autorizado.PUT("/usuarios/:id", protecao.ExigirPapel("admin"), m.AtualizarUsuario)
 	autorizado.PUT("/usuarios/:id/senha", protecao.ExigirPapel("admin"), m.RedefinirSenhaUsuario)
 
