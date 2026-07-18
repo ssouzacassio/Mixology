@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Undo2 } from "lucide-react";
 
 import { apiFetch, obterUsuario } from "@/lib/api";
 import type { Caixa, Mesa } from "@/lib/tipos";
@@ -123,6 +123,15 @@ export default function PaginaAtendimento() {
     }
   }
 
+  async function aoLiberarMesa(mesa: Mesa) {
+    try {
+      await apiFetch(`/api/mesas/${mesa.id}/liberar`, { method: "PUT" });
+      carregarMesas();
+    } catch (erroCapturado) {
+      setErro(erroCapturado instanceof Error ? erroCapturado.message : "Falha ao liberar mesa");
+    }
+  }
+
   return (
     <div>
       <h1 className="text-xl font-semibold mb-4">Atendimento</h1>
@@ -158,6 +167,15 @@ export default function PaginaAtendimento() {
                     {ROTULO_STATUS_MESA[mesa.status] ?? mesa.status}
                   </span>
                 </button>
+                {mesa.status === "ocupada" && (
+                  <button
+                    onClick={() => aoLiberarMesa(mesa)}
+                    className="absolute -top-2 -left-2 rounded-full bg-white dark:bg-zinc-900 border border-black/10 dark:border-white/10 p-1 text-black/40 hover:text-marca-vermelho"
+                    title="Liberar mesa (desfazer, sem comanda)"
+                  >
+                    <Undo2 size={12} />
+                  </button>
+                )}
                 {ehAdmin && (
                   <button
                     onClick={() => aoExcluirMesa(mesa)}
