@@ -134,7 +134,8 @@ export default function PaginaListaUsuarios() {
         )}
 
         {!carregandoLista && !erroLista && usuariosFiltrados.length > 0 && (
-          <table className="w-full text-sm border-collapse max-w-2xl">
+          <div className="overflow-x-auto max-w-2xl">
+          <table className="w-full text-sm border-collapse min-w-[520px]">
             <thead>
               <tr className="text-left border-b border-black/10 dark:border-white/10">
                 <th className="py-2 pr-4">Nome</th>
@@ -169,6 +170,7 @@ export default function PaginaListaUsuarios() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 

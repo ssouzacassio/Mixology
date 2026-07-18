@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, KeyRound, List, UserPlus, Users } from "lucide-react";
 
-const OPCOES = [
+export const OPCOES_USUARIOS = [
   { href: "/usuarios", label: "Lista de funcionários", Icone: List },
   { href: "/usuarios/cadastro", label: "Cadastro", Icone: UserPlus },
   { href: "/usuarios/senha", label: "Alterar senha", Icone: KeyRound },
@@ -43,7 +43,7 @@ export default function MenuUsuarios({ linkClasse }: { linkClasse: string }) {
 
       {aberto && (
         <div className="absolute left-0 top-full mt-1 w-56 rounded-lg border border-marca-azul/20 bg-white dark:bg-zinc-900 shadow-lg py-1 z-20">
-          {OPCOES.map((opcao) => (
+          {OPCOES_USUARIOS.map((opcao) => (
             <Link
               key={opcao.href}
               href={opcao.href}

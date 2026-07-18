@@ -174,7 +174,7 @@ export default function PaginaAtendimento() {
                 {mesa.status === "ocupada" && (
                   <button
                     onClick={() => aoLiberarMesa(mesa)}
-                    className="absolute -top-2 -left-2 rounded-full bg-white dark:bg-zinc-900 border border-black/10 dark:border-white/10 p-1 text-black/40 hover:text-marca-vermelho"
+                    className="absolute -top-2 -left-2 rounded-full bg-white dark:bg-zinc-900 border border-black/10 dark:border-white/10 p-1 text-black/20 dark:text-white/20 hover:text-marca-vermelho"
                     title="Liberar mesa (desfazer, sem comanda)"
                   >
                     <Undo2 size={12} />
@@ -183,7 +183,7 @@ export default function PaginaAtendimento() {
                 {ehAdmin && (
                   <button
                     onClick={() => aoExcluirMesa(mesa)}
-                    className="absolute -top-2 -right-2 rounded-full bg-white dark:bg-zinc-900 border border-black/10 dark:border-white/10 p-1 text-black/40 hover:text-marca-vermelho"
+                    className="absolute -top-2 -right-2 rounded-full bg-white dark:bg-zinc-900 border border-black/10 dark:border-white/10 p-1 text-black/20 dark:text-white/20 hover:text-marca-vermelho"
                     title="Remover mesa"
                   >
                     <Trash2 size={12} />
