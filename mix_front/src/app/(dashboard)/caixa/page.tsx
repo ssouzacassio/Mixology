@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Lock, LockOpen } from "lucide-react";
+import { Lock, LockOpen, Table2 } from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
 import type { Caixa, Mesa, Venda } from "@/lib/tipos";
@@ -217,16 +217,16 @@ export default function PaginaCaixa() {
           </div>
 
           <div>
-            <h2 className="text-lg font-semibold mb-3">Mesas</h2>
-            <p className="text-xs text-black/50 dark:text-white/50 mb-3">
+            <h2 className="text-lg font-semibold mb-3 text-center">Mesas</h2>
+            <p className="text-xs text-black/50 dark:text-white/50 mb-3 text-center">
               Só é possível fechar mesas em consumação — abrir e lançar pedidos é feito em Atendimento.
             </p>
             {mesas.length === 0 && (
-              <p className="text-sm text-black/60 dark:text-white/60">
+              <p className="text-sm text-black/60 dark:text-white/60 text-center">
                 Nenhuma mesa cadastrada ainda.
               </p>
             )}
-            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3 max-w-3xl">
+            <div className="flex flex-wrap justify-center gap-3 max-w-3xl mx-auto">
               {mesas.map((mesa) => {
                 const contas =
                   mesa.status === "consumacao"
@@ -238,11 +238,14 @@ export default function PaginaCaixa() {
                     key={mesa.id}
                     onClick={() => aoClicarMesa(mesa)}
                     disabled={mesa.status !== "consumacao"}
-                    className="w-full rounded-lg border border-black/10 dark:border-white/10 bg-white dark:bg-zinc-900 p-4 text-sm font-medium transition-all disabled:cursor-default enabled:hover:border-marca-vermelho/40 enabled:hover:shadow-sm enabled:cursor-pointer"
+                    className="w-32 rounded-lg border border-black/10 dark:border-white/10 bg-white dark:bg-zinc-900 p-4 text-sm font-medium transition-all disabled:cursor-default enabled:hover:border-marca-vermelho/40 enabled:hover:shadow-sm enabled:cursor-pointer"
                   >
-                    <span className="flex items-center justify-center gap-1.5">
-                      <SinalMesa status={mesa.status} />
-                      {mesa.nome}
+                    <span className="flex flex-col items-center gap-1">
+                      <Table2 size={20} className="text-black/25 dark:text-white/25" />
+                      <span className="flex items-center gap-1.5">
+                        <SinalMesa status={mesa.status} />
+                        {mesa.nome}
+                      </span>
                     </span>
                     <span className="block text-xs font-normal text-black/60 dark:text-white/60 mt-1">
                       {ROTULO_STATUS_MESA[mesa.status] ?? mesa.status}

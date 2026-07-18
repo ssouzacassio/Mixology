@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Trash2, Undo2 } from "lucide-react";
+import { Plus, Table2, Trash2, Undo2 } from "lucide-react";
 
 import { apiFetch, obterUsuario } from "@/lib/api";
 import type { Caixa, Mesa } from "@/lib/tipos";
@@ -152,16 +152,19 @@ export default function PaginaAtendimento() {
         <div>
           {erro && <p className="text-sm text-marca-vermelho mb-4">{erro}</p>}
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3 max-w-3xl mb-4">
+          <div className="flex flex-wrap justify-center gap-3 max-w-3xl mx-auto mb-6">
             {mesas.map((mesa) => (
-              <div key={mesa.id} className="relative">
+              <div key={mesa.id} className="relative w-32">
                 <button
                   onClick={() => aoClicarMesa(mesa)}
                   className="w-full rounded-lg border border-black/10 dark:border-white/10 bg-white dark:bg-zinc-900 p-4 text-sm font-medium hover:border-marca-vermelho/40 hover:shadow-sm transition-all"
                 >
-                  <span className="flex items-center justify-center gap-1.5">
-                    <SinalMesa status={mesa.status} />
-                    {mesa.nome}
+                  <span className="flex flex-col items-center gap-1">
+                    <Table2 size={20} className="text-black/25 dark:text-white/25" />
+                    <span className="flex items-center gap-1.5">
+                      <SinalMesa status={mesa.status} />
+                      {mesa.nome}
+                    </span>
                   </span>
                   <span className="block text-xs font-normal text-black/60 dark:text-white/60 mt-1">
                     {ROTULO_STATUS_MESA[mesa.status] ?? mesa.status}
@@ -190,12 +193,12 @@ export default function PaginaAtendimento() {
           </div>
 
           {mesas.length === 0 && (
-            <p className="text-sm text-black/60 dark:text-white/60 mb-4">
+            <p className="text-sm text-black/60 dark:text-white/60 mb-4 text-center">
               Nenhuma mesa cadastrada ainda.
             </p>
           )}
 
-          <form onSubmit={aoCriarMesa} className="flex items-end gap-2 max-w-sm">
+          <form onSubmit={aoCriarMesa} className="flex items-end gap-2 max-w-sm mx-auto">
             <div className="flex-1">
               <label className="block text-sm font-medium mb-1" htmlFor="nova-mesa">
                 Nova mesa
