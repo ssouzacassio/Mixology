@@ -63,6 +63,17 @@ export default function PaginaAtendimento() {
       }
       return;
     }
+
+    if (mesa.status === "finalizada") {
+      try {
+        await apiFetch(`/api/mesas/${mesa.id}/liberar`, { method: "PUT" });
+        carregarMesas();
+      } catch (erroCapturado) {
+        setErro(erroCapturado instanceof Error ? erroCapturado.message : "Falha ao liberar mesa");
+      }
+      return;
+    }
+
     setMesaSelecionada(mesa);
   }
 

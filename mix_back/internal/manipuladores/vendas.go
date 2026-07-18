@@ -140,7 +140,8 @@ type entradaFecharVenda struct {
 }
 
 // FecharVenda é usado pelo caixa: define a forma de pagamento, marca a
-// comanda como fechada e libera a mesa de volta pra "livre".
+// comanda como fechada e marca a mesa como "finalizada" (paga, mas ainda
+// precisa ser liberada — pelo atendimento — antes de aceitar novos clientes).
 func (m *Manipulador) FecharVenda(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
@@ -178,7 +179,7 @@ func (m *Manipulador) FecharVenda(c *gin.Context) {
 		if venda.MesaID != nil {
 			if err := tx.Model(&modelos.Mesa{}).
 				Where("id = ?", *venda.MesaID).
-				Update("status", "livre").Error; err != nil {
+				Update("status", "finalizada").Error; err != nil {
 				return err
 			}
 		}
