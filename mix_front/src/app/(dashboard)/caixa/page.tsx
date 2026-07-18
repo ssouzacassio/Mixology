@@ -266,29 +266,27 @@ export default function PaginaCaixa() {
               </p>
             )}
 
-            {ehAdmin && (
-              <form onSubmit={aoCriarMesa} className="flex items-end gap-2 max-w-sm">
-                <div className="flex-1">
-                  <label className="block text-sm font-medium mb-1" htmlFor="nova-mesa">
-                    Nova mesa
-                  </label>
-                  <input
-                    id="nova-mesa"
-                    value={novaMesa}
-                    onChange={(e) => setNovaMesa(e.target.value)}
-                    placeholder="Ex: Mesa 5"
-                    className={CAMPO_CLASSE}
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="flex items-center gap-1 rounded bg-marca-vermelho text-white font-medium px-3 py-2 text-sm hover:opacity-90"
-                >
-                  <Plus size={16} />
-                  Criar
-                </button>
-              </form>
-            )}
+            <form onSubmit={aoCriarMesa} className="flex items-end gap-2 max-w-sm">
+              <div className="flex-1">
+                <label className="block text-sm font-medium mb-1" htmlFor="nova-mesa">
+                  Nova mesa
+                </label>
+                <input
+                  id="nova-mesa"
+                  value={novaMesa}
+                  onChange={(e) => setNovaMesa(e.target.value)}
+                  placeholder="Ex: Mesa 5"
+                  className={CAMPO_CLASSE}
+                />
+              </div>
+              <button
+                type="submit"
+                className="flex items-center gap-1 rounded bg-marca-vermelho text-white font-medium px-3 py-2 text-sm hover:opacity-90"
+              >
+                <Plus size={16} />
+                Criar
+              </button>
+            </form>
           </div>
         </div>
       )}

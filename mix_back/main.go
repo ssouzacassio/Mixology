@@ -62,7 +62,7 @@ func main() {
 	autorizado.POST("/vendas", m.CriarVenda)
 
 	autorizado.GET("/mesas", m.ListarMesas)
-	autorizado.POST("/mesas", protecao.ExigirPapel("admin"), m.CriarMesa)
+	autorizado.POST("/mesas", m.CriarMesa)
 	autorizado.DELETE("/mesas/:id", protecao.ExigirPapel("admin"), m.ExcluirMesa)
 	autorizado.PUT("/mesas/:id/ocupar", m.OcuparMesa)
 	autorizado.PUT("/mesas/:id/liberar", m.LiberarMesa)
