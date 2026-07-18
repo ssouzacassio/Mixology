@@ -6,6 +6,7 @@ import { Martini, Package, ShoppingCart, Users } from "lucide-react";
 
 import { obterUsuario } from "@/lib/api";
 import BotaoTema from "@/components/BotaoTema";
+import BotaoOrientacao from "@/components/BotaoOrientacao";
 
 const SECOES = [
   {
@@ -46,9 +47,12 @@ export default function PaginaMenu() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
         <h1 className="text-xl font-semibold">Menu</h1>
-        <BotaoTema />
+        <div className="flex items-center gap-2">
+          <BotaoOrientacao />
+          <BotaoTema />
+        </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {secoes.map((secao) => (

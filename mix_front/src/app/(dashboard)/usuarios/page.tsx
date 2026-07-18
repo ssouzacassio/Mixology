@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
 import { apiFetch, obterUsuario, type Usuario } from "@/lib/api";
+import BarraPesquisa from "@/components/BarraPesquisa";
 
 const PAPEIS = [
   { valor: "atendente", label: "Atendente" },
@@ -17,6 +18,7 @@ export default function PaginaUsuarios() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [carregandoLista, setCarregandoLista] = useState(true);
   const [erroLista, setErroLista] = useState("");
+  const [busca, setBusca] = useState("");
 
   const [nomeCompleto, setNomeCompleto] = useState("");
   const [nomeUsuario, setNomeUsuario] = useState("");
@@ -78,15 +80,36 @@ export default function PaginaUsuarios() {
     return null;
   }
 
+  const usuariosFiltrados = usuarios.filter((u) => {
+    const alvo = busca.trim().toLowerCase();
+    if (!alvo) return true;
+    return (
+      u.nome_completo.toLowerCase().includes(alvo) ||
+      u.usuario.toLowerCase().includes(alvo)
+    );
+  });
+
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-xl font-semibold mb-4">Funcionários</h1>
+        <div className="flex items-center justify-between gap-4 mb-4">
+          <h1 className="text-xl font-semibold">Funcionários</h1>
+          <BarraPesquisa
+            valor={busca}
+            aoMudar={setBusca}
+            placeholder="Buscar funcionário..."
+            className="w-full max-w-xs"
+          />
+        </div>
 
         {carregandoLista && <p className="text-sm text-black/60 dark:text-white/60">Carregando...</p>}
         {erroLista && <p className="text-sm text-marca-vermelho">{erroLista}</p>}
 
-        {!carregandoLista && !erroLista && (
+        {!carregandoLista && !erroLista && usuariosFiltrados.length === 0 && (
+          <p className="text-sm text-black/60 dark:text-white/60">Nenhum funcionário encontrado.</p>
+        )}
+
+        {!carregandoLista && !erroLista && usuariosFiltrados.length > 0 && (
           <table className="w-full text-sm border-collapse max-w-2xl">
             <thead>
               <tr className="text-left border-b border-black/10 dark:border-white/10">
@@ -96,7 +119,7 @@ export default function PaginaUsuarios() {
               </tr>
             </thead>
             <tbody>
-              {usuarios.map((u) => (
+              {usuariosFiltrados.map((u) => (
                 <tr key={u.id} className="border-b border-black/5 dark:border-white/5">
                   <td className="py-2 pr-4">{u.nome_completo}</td>
                   <td className="py-2 pr-4">{u.usuario}</td>
