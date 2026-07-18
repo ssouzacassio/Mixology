@@ -2,6 +2,7 @@ package manipuladores
 
 import (
 	"net/http"
+	"strings"
 
 	"mixology/mix_back/internal/autenticacao"
 	"mixology/mix_back/internal/modelos"
@@ -12,12 +13,33 @@ import (
 
 type entradaRegistro struct {
 	NomeCompleto string `json:"nome_completo" binding:"required"`
-	Email        string `json:"email" binding:"required,email"`
+	NomeUsuario  string `json:"usuario" binding:"required,min=3"`
 	Senha        string `json:"senha" binding:"required,min=6"`
 	Papel        string `json:"papel"`
 }
 
+// Registrar cria um novo usuário. O primeiro usuário do sistema vira admin
+// automaticamente (bootstrap); depois disso, só um admin já autenticado
+// pode cadastrar novos funcionários.
 func (m *Manipulador) Registrar(c *gin.Context) {
+	var totalUsuarios int64
+	if err := m.DB.Model(&modelos.Usuario{}).Count(&totalUsuarios).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "falha ao verificar usuários"})
+		return
+	}
+
+	primeiroUsuario := totalUsuarios == 0
+
+	if !primeiroUsuario {
+		cabecalho := c.GetHeader("Authorization")
+		tokenTexto := strings.TrimPrefix(cabecalho, "Bearer ")
+		reivindicacoes, err := autenticacao.AnalisarToken(m.SegredoJWT, tokenTexto)
+		if !strings.HasPrefix(cabecalho, "Bearer ") || err != nil || reivindicacoes.Papel != "admin" {
+			c.JSON(http.StatusForbidden, gin.H{"error": "apenas um administrador pode cadastrar novos usuários"})
+			return
+		}
+	}
+
 	var entrada entradaRegistro
 	if err := c.ShouldBindJSON(&entrada); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -34,16 +56,19 @@ func (m *Manipulador) Registrar(c *gin.Context) {
 	if papel == "" {
 		papel = "atendente"
 	}
+	if primeiroUsuario {
+		papel = "admin"
+	}
 
 	usuario := modelos.Usuario{
 		NomeCompleto: entrada.NomeCompleto,
-		Email:        entrada.Email,
+		NomeUsuario:  entrada.NomeUsuario,
 		SenhaHash:    string(hash),
 		Papel:        papel,
 	}
 
 	if err := m.DB.Create(&usuario).Error; err != nil {
-		c.JSON(http.StatusConflict, gin.H{"error": "e-mail já cadastrado"})
+		c.JSON(http.StatusConflict, gin.H{"error": "nome de usuário já cadastrado"})
 		return
 	}
 
@@ -57,8 +82,8 @@ func (m *Manipulador) Registrar(c *gin.Context) {
 }
 
 type entradaLogin struct {
-	Email string `json:"email" binding:"required,email"`
-	Senha string `json:"senha" binding:"required"`
+	NomeUsuario string `json:"usuario" binding:"required"`
+	Senha       string `json:"senha" binding:"required"`
 }
 
 func (m *Manipulador) Entrar(c *gin.Context) {
@@ -69,7 +94,7 @@ func (m *Manipulador) Entrar(c *gin.Context) {
 	}
 
 	var usuario modelos.Usuario
-	if err := m.DB.Where("email = ?", entrada.Email).First(&usuario).Error; err != nil {
+	if err := m.DB.Where("nome_usuario = ?", entrada.NomeUsuario).First(&usuario).Error; err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "credenciais inválidas"})
 		return
 	}

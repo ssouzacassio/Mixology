@@ -58,6 +58,10 @@ func main() {
 	autorizado.GET("/vendas", m.ListarVendas)
 	autorizado.POST("/vendas", m.CriarVenda)
 
+	autorizado.GET("/usuarios", protecao.ExigirPapel("admin"), m.ListarUsuarios)
+	autorizado.PUT("/usuarios/perfil", m.AtualizarPerfil)
+	autorizado.PUT("/usuarios/senha", m.AlterarSenha)
+
 	log.Printf("API rodando na porta %s", conf.Porta)
 	if err := roteador.Run(":" + conf.Porta); err != nil {
 		log.Fatalf("falha ao iniciar servidor: %v", err)

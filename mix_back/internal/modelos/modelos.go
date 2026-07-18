@@ -10,7 +10,7 @@ import (
 type Usuario struct {
 	ID           uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
 	NomeCompleto string    `gorm:"not null" json:"nome_completo"`
-	Email        string    `gorm:"uniqueIndex;not null" json:"email"`
+	NomeUsuario  string    `gorm:"uniqueIndex;not null" json:"usuario"`
 	SenhaHash    string    `gorm:"not null" json:"-"`
 	Papel        string    `gorm:"not null;default:atendente" json:"papel"`
 	CriadoEm     time.Time `gorm:"autoCreateTime" json:"criado_em"`
