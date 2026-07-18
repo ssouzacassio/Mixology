@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { LayoutGrid, Martini, Package, ShoppingCart, Wallet } from "lucide-react";
+import { ConciergeBell, LayoutGrid, Martini, Package, ShoppingCart, Wallet } from "lucide-react";
 
 import { encerrarSessao, obterToken, obterUsuario, type Usuario } from "@/lib/api";
 import { aoMudarOrientacao, obterOrientacaoAtual, type OrientacaoMenu } from "@/lib/layoutPref";
@@ -14,6 +14,7 @@ import MenuUsuarios from "@/components/MenuUsuarios";
 const ITENS_NAVEGACAO = [
   { href: "/", label: "Menu", Icone: LayoutGrid },
   { href: "/caixa", label: "Caixa", Icone: ShoppingCart },
+  { href: "/atendimento", label: "Atendimento", Icone: ConciergeBell },
   { href: "/produtos", label: "Produtos", Icone: Martini },
   { href: "/estoque", label: "Estoque", Icone: Package },
 ];

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Martini, Package, ShoppingCart, Users } from "lucide-react";
+import { ConciergeBell, Martini, Package, ShoppingCart, Users } from "lucide-react";
 
 import { obterUsuario } from "@/lib/api";
 import BotaoTema from "@/components/BotaoTema";
@@ -12,8 +12,14 @@ const SECOES = [
   {
     href: "/caixa",
     label: "Caixa",
-    descricao: "Registrar vendas e abrir/fechar o caixa",
+    descricao: "Abrir/fechar o caixa e ver o resumo por pagamento",
     Icone: ShoppingCart,
+  },
+  {
+    href: "/atendimento",
+    label: "Atendimento",
+    descricao: "Mesas e registro de vendas pros clientes",
+    Icone: ConciergeBell,
   },
   {
     href: "/produtos",
