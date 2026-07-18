@@ -4,11 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { LayoutGrid, Martini, Package, ShoppingCart, Users } from "lucide-react";
+import { LayoutGrid, Martini, Package, ShoppingCart } from "lucide-react";
 
 import { encerrarSessao, obterToken, obterUsuario, type Usuario } from "@/lib/api";
 import { aoMudarOrientacao, obterOrientacaoAtual, type OrientacaoMenu } from "@/lib/layoutPref";
 import BarraPesquisa from "@/components/BarraPesquisa";
+import MenuUsuarios from "@/components/MenuUsuarios";
 
 const ITENS_NAVEGACAO = [
   { href: "/", label: "Menu", Icone: LayoutGrid },
@@ -16,8 +17,6 @@ const ITENS_NAVEGACAO = [
   { href: "/produtos", label: "Produtos", Icone: Martini },
   { href: "/estoque", label: "Estoque", Icone: Package },
 ];
-
-const ITEM_ADMIN = { href: "/usuarios", label: "Usuários", Icone: Users };
 
 export default function LayoutPainel({
   children,
@@ -53,10 +52,12 @@ export default function LayoutPainel({
     return null;
   }
 
-  const todosOsItens = usuario?.papel === "admin" ? [...ITENS_NAVEGACAO, ITEM_ADMIN] : ITENS_NAVEGACAO;
-  const itensVisiveis = todosOsItens.filter((item) =>
-    item.label.toLowerCase().includes(buscaMenu.trim().toLowerCase())
+  const ehAdmin = usuario?.papel === "admin";
+  const alvoBusca = buscaMenu.trim().toLowerCase();
+  const itensVisiveis = ITENS_NAVEGACAO.filter((item) =>
+    item.label.toLowerCase().includes(alvoBusca)
   );
+  const usuariosVisivel = ehAdmin && "usuários".includes(alvoBusca);
 
   const linkClasse =
     "flex items-center gap-2 rounded px-3 py-2 text-sm font-medium text-black/70 dark:text-white/70 hover:bg-marca-vermelho/10 hover:text-marca-vermelho transition-colors";
@@ -73,22 +74,15 @@ export default function LayoutPainel({
             priority
           />
           <nav className="flex items-center gap-1 flex-1 flex-wrap">
-            {todosOsItens.map((item) => (
+            {ITENS_NAVEGACAO.map((item) => (
               <Link key={item.href} href={item.href} className={linkClasse}>
                 <item.Icone size={16} strokeWidth={1.75} />
                 {item.label}
               </Link>
             ))}
+            {ehAdmin && <MenuUsuarios linkClasse={linkClasse} />}
           </nav>
-          {usuario && usuario.papel === "admin" && (
-            <Link
-              href="/usuarios"
-              className="text-xs text-black/60 dark:text-white/60 hover:underline whitespace-nowrap"
-            >
-              {usuario.nome_completo} · {usuario.papel}
-            </Link>
-          )}
-          {usuario && usuario.papel !== "admin" && (
+          {usuario && (
             <span className="text-xs text-black/60 dark:text-white/60 whitespace-nowrap">
               {usuario.nome_completo} · {usuario.papel}
             </span>
@@ -126,22 +120,15 @@ export default function LayoutPainel({
               {item.label}
             </Link>
           ))}
-          {itensVisiveis.length === 0 && (
+          {usuariosVisivel && <MenuUsuarios linkClasse={linkClasse} />}
+          {itensVisiveis.length === 0 && !usuariosVisivel && (
             <p className="text-xs text-black/50 dark:text-white/50 px-3 py-2">
               Nada encontrado.
             </p>
           )}
         </nav>
         <div className="mt-auto pt-4 border-t border-marca-azul/20">
-          {usuario && usuario.papel === "admin" && (
-            <Link
-              href="/usuarios"
-              className="block text-xs text-black/60 dark:text-white/60 mb-2 hover:underline"
-            >
-              {usuario.nome_completo} · {usuario.papel}
-            </Link>
-          )}
-          {usuario && usuario.papel !== "admin" && (
+          {usuario && (
             <p className="text-xs text-black/60 dark:text-white/60 mb-2">
               {usuario.nome_completo} · {usuario.papel}
             </p>

@@ -19,7 +19,7 @@ const PAPEIS = [
 const CAMPO_CLASSE =
   "w-full rounded border border-black/15 dark:border-white/15 px-3 py-2 text-sm text-black dark:text-white bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-marca-azul";
 
-export default function PaginaUsuarios() {
+export default function PaginaListaUsuarios() {
   const router = useRouter();
   const [autorizado, setAutorizado] = useState(false);
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -30,7 +30,6 @@ export default function PaginaUsuarios() {
   const [editandoId, setEditandoId] = useState<string | null>(null);
   const [nomeCompleto, setNomeCompleto] = useState("");
   const [nomeUsuario, setNomeUsuario] = useState("");
-  const [senha, setSenha] = useState("");
   const [papel, setPapel] = useState("atendente");
   const [ativo, setAtivo] = useState(true);
   const [erroForm, setErroForm] = useState("");
@@ -65,7 +64,6 @@ export default function PaginaUsuarios() {
     setNomeUsuario(usuario.usuario);
     setPapel(usuario.papel);
     setAtivo(usuario.ativo);
-    setSenha("");
     setErroForm("");
   }
 
@@ -75,42 +73,24 @@ export default function PaginaUsuarios() {
     setNomeUsuario("");
     setPapel("atendente");
     setAtivo(true);
-    setSenha("");
     setErroForm("");
   }
 
   async function aoSalvar(evento: FormEvent) {
     evento.preventDefault();
+    if (!editandoId) return;
     setErroForm("");
     setSalvando(true);
     try {
-      if (editandoId) {
-        await apiFetch(`/api/usuarios/${editandoId}`, {
-          method: "PUT",
-          body: JSON.stringify({
-            nome_completo: nomeCompleto,
-            usuario: nomeUsuario,
-            papel,
-            ativo,
-          }),
-        });
-        if (senha) {
-          await apiFetch(`/api/usuarios/${editandoId}/senha`, {
-            method: "PUT",
-            body: JSON.stringify({ senha_nova: senha }),
-          });
-        }
-      } else {
-        await apiFetch("/api/autenticacao/registrar", {
-          method: "POST",
-          body: JSON.stringify({
-            nome_completo: nomeCompleto,
-            usuario: nomeUsuario,
-            senha,
-            papel,
-          }),
-        });
-      }
+      await apiFetch(`/api/usuarios/${editandoId}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          nome_completo: nomeCompleto,
+          usuario: nomeUsuario,
+          papel,
+          ativo,
+        }),
+      });
       cancelarEdicao();
       await carregarUsuarios();
     } catch (erro) {
@@ -137,7 +117,7 @@ export default function PaginaUsuarios() {
     <div className="flex flex-col gap-8">
       <div>
         <div className="flex items-center justify-between gap-4 mb-4">
-          <h1 className="text-xl font-semibold">Funcionários</h1>
+          <h1 className="text-xl font-semibold">Lista de funcionários</h1>
           <BarraPesquisa
             valor={busca}
             aoMudar={setBusca}
@@ -192,69 +172,53 @@ export default function PaginaUsuarios() {
         )}
       </div>
 
-      <div className="max-w-sm">
-        <h2 className="text-lg font-semibold mb-3">
-          {editandoId ? "Editar funcionário" : "Cadastrar funcionário"}
-        </h2>
-        <form onSubmit={aoSalvar} className="flex flex-col gap-3">
-          <div>
-            <label className="block text-sm font-medium mb-1" htmlFor="novo-nome">
-              Nome completo
-            </label>
-            <input
-              id="novo-nome"
-              required
-              value={nomeCompleto}
-              onChange={(e) => setNomeCompleto(e.target.value)}
-              className={CAMPO_CLASSE}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1" htmlFor="novo-usuario">
-              Usuário
-            </label>
-            <input
-              id="novo-usuario"
-              type="text"
-              required
-              value={nomeUsuario}
-              onChange={(e) => setNomeUsuario(formatarNomeUsuario(e.target.value))}
-              className={CAMPO_CLASSE}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1" htmlFor="nova-senha">
-              {editandoId ? "Nova senha (deixe em branco pra manter)" : "Senha"}
-            </label>
-            <input
-              id="nova-senha"
-              type="password"
-              required={!editandoId}
-              minLength={6}
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              className={CAMPO_CLASSE}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1" htmlFor="novo-papel">
-              Papel
-            </label>
-            <select
-              id="novo-papel"
-              value={papel}
-              onChange={(e) => setPapel(e.target.value)}
-              className={CAMPO_CLASSE}
-            >
-              {PAPEIS.map((p) => (
-                <option key={p.valor} value={p.valor}>
-                  {p.label}
-                </option>
-              ))}
-            </select>
-          </div>
+      {editandoId && (
+        <div className="max-w-sm">
+          <h2 className="text-lg font-semibold mb-3">Editar funcionário</h2>
+          <form onSubmit={aoSalvar} className="flex flex-col gap-3">
+            <div>
+              <label className="block text-sm font-medium mb-1" htmlFor="edit-nome">
+                Nome completo
+              </label>
+              <input
+                id="edit-nome"
+                required
+                value={nomeCompleto}
+                onChange={(e) => setNomeCompleto(e.target.value)}
+                className={CAMPO_CLASSE}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1" htmlFor="edit-usuario">
+                Usuário
+              </label>
+              <input
+                id="edit-usuario"
+                type="text"
+                required
+                value={nomeUsuario}
+                onChange={(e) => setNomeUsuario(formatarNomeUsuario(e.target.value))}
+                className={CAMPO_CLASSE}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1" htmlFor="edit-papel">
+                Papel
+              </label>
+              <select
+                id="edit-papel"
+                value={papel}
+                onChange={(e) => setPapel(e.target.value)}
+                className={CAMPO_CLASSE}
+              >
+                {PAPEIS.map((p) => (
+                  <option key={p.valor} value={p.valor}>
+                    {p.label}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          {editandoId && (
             <label className="flex items-center gap-2 text-sm">
               <input
                 type="checkbox"
@@ -263,19 +227,17 @@ export default function PaginaUsuarios() {
               />
               Ativo (desmarque pra bloquear o login)
             </label>
-          )}
 
-          {erroForm && <p className="text-sm text-marca-vermelho">{erroForm}</p>}
+            {erroForm && <p className="text-sm text-marca-vermelho">{erroForm}</p>}
 
-          <div className="flex items-center gap-3">
-            <button
-              type="submit"
-              disabled={salvando}
-              className="self-start rounded bg-marca-vermelho text-white font-medium px-4 py-2 text-sm hover:opacity-90 disabled:opacity-50"
-            >
-              {salvando ? "Salvando..." : editandoId ? "Salvar alterações" : "Criar funcionário"}
-            </button>
-            {editandoId && (
+            <div className="flex items-center gap-3">
+              <button
+                type="submit"
+                disabled={salvando}
+                className="self-start rounded bg-marca-vermelho text-white font-medium px-4 py-2 text-sm hover:opacity-90 disabled:opacity-50"
+              >
+                {salvando ? "Salvando..." : "Salvar alterações"}
+              </button>
               <button
                 type="button"
                 onClick={cancelarEdicao}
@@ -283,10 +245,10 @@ export default function PaginaUsuarios() {
               >
                 Cancelar
               </button>
-            )}
-          </div>
-        </form>
-      </div>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

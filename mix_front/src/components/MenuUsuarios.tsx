@@ -1,0 +1,61 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { ChevronDown, KeyRound, List, UserPlus, Users } from "lucide-react";
+
+const OPCOES = [
+  { href: "/usuarios", label: "Lista de funcionários", Icone: List },
+  { href: "/usuarios/cadastro", label: "Cadastro", Icone: UserPlus },
+  { href: "/usuarios/senha", label: "Alterar senha", Icone: KeyRound },
+];
+
+export default function MenuUsuarios({ linkClasse }: { linkClasse: string }) {
+  const [aberto, setAberto] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function aoClicarFora(evento: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(evento.target as Node)) {
+        setAberto(false);
+      }
+    }
+    document.addEventListener("mousedown", aoClicarFora);
+    return () => document.removeEventListener("mousedown", aoClicarFora);
+  }, []);
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setAberto((valor) => !valor)}
+        className={`${linkClasse} w-full justify-between`}
+      >
+        <span className="flex items-center gap-2">
+          <Users size={18} strokeWidth={1.75} />
+          Usuários
+        </span>
+        <ChevronDown
+          size={14}
+          className={`transition-transform ${aberto ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {aberto && (
+        <div className="absolute left-0 top-full mt-1 w-56 rounded-lg border border-marca-azul/20 bg-white dark:bg-zinc-900 shadow-lg py-1 z-20">
+          {OPCOES.map((opcao) => (
+            <Link
+              key={opcao.href}
+              href={opcao.href}
+              onClick={() => setAberto(false)}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-black/70 dark:text-white/70 hover:bg-marca-vermelho/10 hover:text-marca-vermelho transition-colors"
+            >
+              <opcao.Icone size={16} strokeWidth={1.75} />
+              {opcao.label}
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
