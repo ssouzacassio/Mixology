@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { Lock, LockOpen } from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
-import type { Caixa, Venda } from "@/lib/tipos";
+import type { Caixa, Mesa, Venda } from "@/lib/tipos";
+import { ROTULO_STATUS_MESA } from "@/lib/mesaStatus";
 import Modal from "@/components/Modal";
 import ModalFecharConta from "@/components/ModalFecharConta";
 
@@ -13,6 +14,13 @@ const LABELS_PAGAMENTO: Record<string, string> = {
   debito: "Cartão débito",
   credito: "Cartão crédito",
   pix: "Pix",
+};
+
+const CLASSES_STATUS_MESA: Record<string, string> = {
+  livre: "border-green-600/30 bg-green-600/10 text-green-700 dark:text-green-500",
+  ocupada: "border-amber-600/30 bg-amber-600/10 text-amber-700 dark:text-amber-500",
+  consumacao:
+    "border-marca-vermelho/30 bg-marca-vermelho/10 text-marca-vermelho hover:bg-marca-vermelho/20 cursor-pointer",
 };
 
 function formatarReal(valor: number) {
@@ -37,6 +45,7 @@ export default function PaginaCaixa() {
   const [resumo, setResumo] = useState<Record<string, number>>({});
   const [contasAbertas, setContasAbertas] = useState<Venda[]>([]);
   const [contaSelecionada, setContaSelecionada] = useState<Venda | null>(null);
+  const [mesas, setMesas] = useState<Mesa[]>([]);
 
   useEffect(() => {
     carregarCaixaAtual();
@@ -46,6 +55,7 @@ export default function PaginaCaixa() {
     if (caixaAtual) {
       carregarResumo(caixaAtual.id);
       carregarContasAbertas();
+      carregarMesas();
     }
   }, [caixaAtual?.id]);
 
@@ -84,10 +94,26 @@ export default function PaginaCaixa() {
     }
   }
 
+  async function carregarMesas() {
+    try {
+      const dados = (await apiFetch("/api/mesas")) as Mesa[];
+      setMesas(dados);
+    } catch {
+      setMesas([]);
+    }
+  }
+
   async function aoFecharConta() {
     setContaSelecionada(null);
     await carregarContasAbertas();
+    await carregarMesas();
     if (caixaAtual) await carregarResumo(caixaAtual.id);
+  }
+
+  function aoClicarMesa(mesa: Mesa) {
+    if (mesa.status !== "consumacao") return;
+    const conta = contasAbertas.find((v) => v.mesa_id === mesa.id);
+    if (conta) setContaSelecionada(conta);
   }
 
   async function aoAbrirCaixa() {
@@ -118,6 +144,7 @@ export default function PaginaCaixa() {
       setCaixaAtual(null);
       setResumo({});
       setContasAbertas([]);
+      setMesas([]);
       setConfirmandoFechamento(false);
     } catch (erroCapturado) {
       setErro(erroCapturado instanceof Error ? erroCapturado.message : "Falha ao fechar caixa");
@@ -184,23 +211,44 @@ export default function PaginaCaixa() {
           </div>
 
           <div>
-            <h2 className="text-lg font-semibold mb-3">Mesas abertas</h2>
-            {contasAbertas.length === 0 && (
+            <h2 className="text-lg font-semibold mb-3">Mesas</h2>
+            <p className="text-xs text-black/50 dark:text-white/50 mb-3">
+              Só é possível fechar mesas em consumação — abrir e lançar pedidos é feito em Atendimento.
+            </p>
+            {mesas.length === 0 && (
               <p className="text-sm text-black/60 dark:text-white/60">
-                Nenhuma conta em aberto no momento.
+                Nenhuma mesa cadastrada ainda.
               </p>
             )}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl">
-              {contasAbertas.map((conta) => (
-                <button
-                  key={conta.id}
-                  onClick={() => setContaSelecionada(conta)}
-                  className="rounded-lg border border-marca-azul/20 p-4 text-left hover:border-marca-vermelho/40 hover:shadow-sm transition-all"
-                >
-                  <p className="text-sm font-medium">{conta.mesa?.nome ?? "Mesa"}</p>
-                  <p className="text-lg font-semibold">{formatarReal(conta.total)}</p>
-                </button>
-              ))}
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3 max-w-3xl">
+              {mesas.map((mesa) => {
+                const conta =
+                  mesa.status === "consumacao"
+                    ? contasAbertas.find((v) => v.mesa_id === mesa.id)
+                    : undefined;
+                return (
+                  <button
+                    key={mesa.id}
+                    onClick={() => aoClicarMesa(mesa)}
+                    disabled={mesa.status !== "consumacao"}
+                    className={`w-full rounded-lg border p-4 text-sm font-medium transition-colors disabled:cursor-default ${
+                      CLASSES_STATUS_MESA[mesa.status] ?? CLASSES_STATUS_MESA.ocupada
+                    }`}
+                  >
+                    {mesa.nome}
+                    <br />
+                    <span className="text-xs font-normal">
+                      {ROTULO_STATUS_MESA[mesa.status] ?? mesa.status}
+                    </span>
+                    {conta && (
+                      <>
+                        <br />
+                        <span className="text-xs font-semibold">{formatarReal(conta.total)}</span>
+                      </>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

@@ -6,7 +6,17 @@ import { Plus, Trash2 } from "lucide-react";
 
 import { apiFetch, obterUsuario } from "@/lib/api";
 import type { Caixa, Mesa } from "@/lib/tipos";
+import { ROTULO_STATUS_MESA } from "@/lib/mesaStatus";
 import ModalVenda from "@/components/ModalVenda";
+
+const CLASSES_STATUS_MESA: Record<string, string> = {
+  livre:
+    "border-green-600/30 bg-green-600/10 text-green-700 dark:text-green-500 hover:bg-green-600/20",
+  ocupada:
+    "border-amber-600/30 bg-amber-600/10 text-amber-700 dark:text-amber-500 hover:bg-amber-600/20",
+  consumacao:
+    "border-marca-vermelho/30 bg-marca-vermelho/10 text-marca-vermelho hover:bg-marca-vermelho/20",
+};
 
 const CAMPO_CLASSE =
   "w-full rounded border border-black/15 dark:border-white/15 px-3 py-2 text-sm text-black dark:text-white bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-marca-azul";
@@ -119,15 +129,13 @@ export default function PaginaAtendimento() {
                 <button
                   onClick={() => aoClicarMesa(mesa)}
                   className={`w-full rounded-lg border p-4 text-sm font-medium transition-colors ${
-                    mesa.status === "livre"
-                      ? "border-green-600/30 bg-green-600/10 text-green-700 dark:text-green-500 hover:bg-green-600/20"
-                      : "border-marca-vermelho/30 bg-marca-vermelho/10 text-marca-vermelho hover:bg-marca-vermelho/20"
+                    CLASSES_STATUS_MESA[mesa.status] ?? CLASSES_STATUS_MESA.ocupada
                   }`}
                 >
                   {mesa.nome}
                   <br />
                   <span className="text-xs font-normal">
-                    {mesa.status === "livre" ? "Livre" : "Ocupada"}
+                    {ROTULO_STATUS_MESA[mesa.status] ?? mesa.status}
                   </span>
                 </button>
                 {ehAdmin && (

@@ -117,8 +117,8 @@ func (m *Manipulador) CriarVenda(c *gin.Context) {
 			return err
 		}
 
-		if mesa.Status != "ocupada" {
-			if err := tx.Model(&mesa).Update("status", "ocupada").Error; err != nil {
+		if mesa.Status != "consumacao" {
+			if err := tx.Model(&mesa).Update("status", "consumacao").Error; err != nil {
 				return err
 			}
 		}
