@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"mixology/backend/internal/autenticacao"
+	"mixology/mix_back/internal/autenticacao"
 
 	"github.com/gin-gonic/gin"
 )

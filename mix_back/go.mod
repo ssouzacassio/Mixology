@@ -1,4 +1,4 @@
-module mixology/backend
+module mixology/mix_back
 
 go 1.26.5
 

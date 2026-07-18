@@ -3,7 +3,7 @@ package manipuladores
 import (
 	"net/http"
 
-	"mixology/backend/internal/modelos"
+	"mixology/mix_back/internal/modelos"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"

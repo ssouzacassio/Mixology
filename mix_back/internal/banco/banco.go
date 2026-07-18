@@ -3,7 +3,7 @@ package banco
 import (
 	"log"
 
-	"mixology/backend/internal/modelos"
+	"mixology/mix_back/internal/modelos"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

@@ -1,7 +1,7 @@
 # Mixology — Frontend
 
 Frontend (Next.js + TypeScript + Tailwind) do sistema de caixa e estoque
-da Mixology Drinkeria. Conversa com a API em Go que está em `../backend`.
+da Mixology Drinkeria. Conversa com a API em Go que está em `../mix_back`.
 
 ## Rodando localmente
 
@@ -20,7 +20,7 @@ da Mixology Drinkeria. Conversa com a API em Go que está em `../backend`.
    ```
 
 3. Abra [http://localhost:3000](http://localhost:3000). Certifique-se de
-   que a API (`backend`) também está rodando — veja `../backend/README.md`.
+   que a API (`mix_back`) também está rodando — veja `../mix_back/README.md`.
 
 ## Estrutura
 

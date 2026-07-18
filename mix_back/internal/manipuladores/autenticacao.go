@@ -3,8 +3,8 @@ package manipuladores
 import (
 	"net/http"
 
-	"mixology/backend/internal/autenticacao"
-	"mixology/backend/internal/modelos"
+	"mixology/mix_back/internal/autenticacao"
+	"mixology/mix_back/internal/modelos"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"

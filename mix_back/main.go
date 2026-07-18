@@ -3,10 +3,10 @@ package main
 import (
 	"log"
 
-	"mixology/backend/internal/banco"
-	"mixology/backend/internal/configuracao"
-	"mixology/backend/internal/manipuladores"
-	"mixology/backend/internal/protecao"
+	"mixology/mix_back/internal/banco"
+	"mixology/mix_back/internal/configuracao"
+	"mixology/mix_back/internal/manipuladores"
+	"mixology/mix_back/internal/protecao"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
