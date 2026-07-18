@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { LayoutGrid, Martini, Package, ShoppingCart } from "lucide-react";
+import { LayoutGrid, Martini, Package, ShoppingCart, Wallet } from "lucide-react";
 
 import { encerrarSessao, obterToken, obterUsuario, type Usuario } from "@/lib/api";
 import { aoMudarOrientacao, obterOrientacaoAtual, type OrientacaoMenu } from "@/lib/layoutPref";
@@ -17,6 +17,8 @@ const ITENS_NAVEGACAO = [
   { href: "/produtos", label: "Produtos", Icone: Martini },
   { href: "/estoque", label: "Estoque", Icone: Package },
 ];
+
+const ITEM_FINANCEIRO = { href: "/financeiro", label: "Financeiro", Icone: Wallet };
 
 export default function LayoutPainel({
   children,
@@ -53,11 +55,13 @@ export default function LayoutPainel({
   }
 
   const ehAdmin = usuario?.papel === "admin";
+  const ehFinanceiro = usuario?.papel === "admin" || usuario?.papel === "gerente";
   const alvoBusca = buscaMenu.trim().toLowerCase();
   const itensVisiveis = ITENS_NAVEGACAO.filter((item) =>
     item.label.toLowerCase().includes(alvoBusca)
   );
   const usuariosVisivel = ehAdmin && "usuários".includes(alvoBusca);
+  const financeiroVisivel = ehFinanceiro && "financeiro".includes(alvoBusca);
 
   const linkClasse =
     "flex items-center gap-2 rounded px-3 py-2 text-sm font-medium text-black/70 dark:text-white/70 hover:bg-marca-vermelho/10 hover:text-marca-vermelho transition-colors";
@@ -80,6 +84,12 @@ export default function LayoutPainel({
                 {item.label}
               </Link>
             ))}
+            {ehFinanceiro && (
+              <Link href={ITEM_FINANCEIRO.href} className={linkClasse}>
+                <ITEM_FINANCEIRO.Icone size={16} strokeWidth={1.75} />
+                {ITEM_FINANCEIRO.label}
+              </Link>
+            )}
             {ehAdmin && <MenuUsuarios linkClasse={linkClasse} />}
           </nav>
           {usuario && (
@@ -120,8 +130,14 @@ export default function LayoutPainel({
               {item.label}
             </Link>
           ))}
+          {financeiroVisivel && (
+            <Link href={ITEM_FINANCEIRO.href} className={linkClasse}>
+              <ITEM_FINANCEIRO.Icone size={18} strokeWidth={1.75} />
+              {ITEM_FINANCEIRO.label}
+            </Link>
+          )}
           {usuariosVisivel && <MenuUsuarios linkClasse={linkClasse} />}
-          {itensVisiveis.length === 0 && !usuariosVisivel && (
+          {itensVisiveis.length === 0 && !usuariosVisivel && !financeiroVisivel && (
             <p className="text-xs text-black/50 dark:text-white/50 px-3 py-2">
               Nada encontrado.
             </p>

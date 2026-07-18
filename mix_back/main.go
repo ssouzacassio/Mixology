@@ -53,10 +53,19 @@ func main() {
 
 	autorizado.POST("/caixas/abrir", m.AbrirCaixa)
 	autorizado.GET("/caixas/atual", m.CaixaAtual)
+	autorizado.GET("/caixas/ultimo-fechado", m.UltimoCaixaFechado)
 	autorizado.POST("/caixas/:id/fechar", m.FecharCaixa)
+	autorizado.GET("/caixas/:id/resumo", m.ResumoCaixa)
+	autorizado.GET("/caixas", protecao.ExigirPapel("admin", "gerente"), m.ListarCaixas)
 
 	autorizado.GET("/vendas", m.ListarVendas)
 	autorizado.POST("/vendas", m.CriarVenda)
+
+	autorizado.GET("/mesas", m.ListarMesas)
+	autorizado.POST("/mesas", protecao.ExigirPapel("admin"), m.CriarMesa)
+	autorizado.DELETE("/mesas/:id", protecao.ExigirPapel("admin"), m.ExcluirMesa)
+	autorizado.PUT("/mesas/:id/ocupar", m.OcuparMesa)
+	autorizado.PUT("/mesas/:id/liberar", m.LiberarMesa)
 
 	autorizado.GET("/usuarios", protecao.ExigirPapel("admin"), m.ListarUsuarios)
 	autorizado.PUT("/usuarios/:id", protecao.ExigirPapel("admin"), m.AtualizarUsuario)

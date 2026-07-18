@@ -104,6 +104,7 @@ func (c *Caixa) BeforeCreate(tx *gorm.DB) error {
 type Venda struct {
 	ID             uuid.UUID   `gorm:"type:uuid;primaryKey" json:"id"`
 	CaixaID        uuid.UUID   `gorm:"type:uuid;not null" json:"caixa_id"`
+	MesaID         *uuid.UUID  `gorm:"type:uuid" json:"mesa_id,omitempty"`
 	CriadoPor      uuid.UUID   `gorm:"type:uuid;not null" json:"criado_por"`
 	Total          float64     `gorm:"not null;default:0" json:"total"`
 	FormaPagamento string      `gorm:"not null" json:"forma_pagamento"`
@@ -151,6 +152,22 @@ type MovimentoEstoque struct {
 func (MovimentoEstoque) TableName() string { return "movimentos_estoque" }
 
 func (m *MovimentoEstoque) BeforeCreate(tx *gorm.DB) error {
+	if m.ID == uuid.Nil {
+		m.ID = uuid.New()
+	}
+	return nil
+}
+
+type Mesa struct {
+	ID       uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
+	Nome     string    `gorm:"not null;uniqueIndex" json:"nome"`
+	Status   string    `gorm:"not null;default:livre" json:"status"`
+	CriadoEm time.Time `gorm:"autoCreateTime" json:"criado_em"`
+}
+
+func (Mesa) TableName() string { return "mesas" }
+
+func (m *Mesa) BeforeCreate(tx *gorm.DB) error {
 	if m.ID == uuid.Nil {
 		m.ID = uuid.New()
 	}

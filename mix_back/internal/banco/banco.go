@@ -24,6 +24,7 @@ func Conectar(urlBancoDados string) *gorm.DB {
 		&modelos.Venda{},
 		&modelos.ItemVenda{},
 		&modelos.MovimentoEstoque{},
+		&modelos.Mesa{},
 	)
 	if err != nil {
 		log.Fatalf("falha ao migrar banco: %v", err)

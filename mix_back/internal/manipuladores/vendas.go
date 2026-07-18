@@ -19,6 +19,7 @@ type entradaItemVenda struct {
 type entradaVenda struct {
 	FormaPagamento string             `json:"forma_pagamento" binding:"required,oneof=dinheiro debito credito pix"`
 	Itens          []entradaItemVenda `json:"itens" binding:"required,min=1"`
+	MesaID         *uuid.UUID         `json:"mesa_id"`
 }
 
 // CriarVenda registra uma venda, seus itens, e abate automaticamente do
@@ -43,6 +44,7 @@ func (m *Manipulador) CriarVenda(c *gin.Context) {
 
 		venda = modelos.Venda{
 			CaixaID:        caixa.ID,
+			MesaID:         entrada.MesaID,
 			CriadoPor:      usuarioUUID,
 			FormaPagamento: entrada.FormaPagamento,
 		}
@@ -98,7 +100,19 @@ func (m *Manipulador) CriarVenda(c *gin.Context) {
 		}
 
 		venda.Total = total
-		return tx.Save(&venda).Error
+		if err := tx.Save(&venda).Error; err != nil {
+			return err
+		}
+
+		if entrada.MesaID != nil {
+			if err := tx.Model(&modelos.Mesa{}).
+				Where("id = ?", *entrada.MesaID).
+				Update("status", "livre").Error; err != nil {
+				return err
+			}
+		}
+
+		return nil
 	})
 
 	if err != nil {
