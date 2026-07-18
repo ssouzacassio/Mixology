@@ -8,6 +8,7 @@ export type Usuario = {
   nome_completo: string;
   usuario: string;
   papel: string;
+  ativo: boolean;
   criado_em: string;
 };
 

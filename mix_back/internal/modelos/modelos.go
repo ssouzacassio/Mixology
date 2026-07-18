@@ -13,6 +13,7 @@ type Usuario struct {
 	NomeUsuario  string    `gorm:"uniqueIndex;not null" json:"usuario"`
 	SenhaHash    string    `gorm:"not null" json:"-"`
 	Papel        string    `gorm:"not null;default:atendente" json:"papel"`
+	Ativo        bool      `gorm:"not null;default:true" json:"ativo"`
 	CriadoEm     time.Time `gorm:"autoCreateTime" json:"criado_em"`
 }
 

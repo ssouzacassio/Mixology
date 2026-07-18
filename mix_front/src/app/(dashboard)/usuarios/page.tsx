@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { Pencil } from "lucide-react";
 
 import { apiFetch, obterUsuario, type Usuario } from "@/lib/api";
 import BarraPesquisa from "@/components/BarraPesquisa";
@@ -12,6 +13,9 @@ const PAPEIS = [
   { valor: "admin", label: "Admin" },
 ];
 
+const CAMPO_CLASSE =
+  "w-full rounded border border-black/15 dark:border-white/15 px-3 py-2 text-sm text-black dark:text-white bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-marca-azul";
+
 export default function PaginaUsuarios() {
   const router = useRouter();
   const [autorizado, setAutorizado] = useState(false);
@@ -20,12 +24,14 @@ export default function PaginaUsuarios() {
   const [erroLista, setErroLista] = useState("");
   const [busca, setBusca] = useState("");
 
+  const [editandoId, setEditandoId] = useState<string | null>(null);
   const [nomeCompleto, setNomeCompleto] = useState("");
   const [nomeUsuario, setNomeUsuario] = useState("");
   const [senha, setSenha] = useState("");
   const [papel, setPapel] = useState("atendente");
-  const [erroCriar, setErroCriar] = useState("");
-  const [criando, setCriando] = useState(false);
+  const [ativo, setAtivo] = useState(true);
+  const [erroForm, setErroForm] = useState("");
+  const [salvando, setSalvando] = useState(false);
 
   useEffect(() => {
     const usuarioLogado = obterUsuario();
@@ -50,29 +56,64 @@ export default function PaginaUsuarios() {
     }
   }
 
-  async function aoCriarUsuario(evento: FormEvent) {
+  function iniciarEdicao(usuario: Usuario) {
+    setEditandoId(usuario.id);
+    setNomeCompleto(usuario.nome_completo);
+    setNomeUsuario(usuario.usuario);
+    setPapel(usuario.papel);
+    setAtivo(usuario.ativo);
+    setSenha("");
+    setErroForm("");
+  }
+
+  function cancelarEdicao() {
+    setEditandoId(null);
+    setNomeCompleto("");
+    setNomeUsuario("");
+    setPapel("atendente");
+    setAtivo(true);
+    setSenha("");
+    setErroForm("");
+  }
+
+  async function aoSalvar(evento: FormEvent) {
     evento.preventDefault();
-    setErroCriar("");
-    setCriando(true);
+    setErroForm("");
+    setSalvando(true);
     try {
-      await apiFetch("/api/autenticacao/registrar", {
-        method: "POST",
-        body: JSON.stringify({
-          nome_completo: nomeCompleto,
-          usuario: nomeUsuario,
-          senha,
-          papel,
-        }),
-      });
-      setNomeCompleto("");
-      setNomeUsuario("");
-      setSenha("");
-      setPapel("atendente");
+      if (editandoId) {
+        await apiFetch(`/api/usuarios/${editandoId}`, {
+          method: "PUT",
+          body: JSON.stringify({
+            nome_completo: nomeCompleto,
+            usuario: nomeUsuario,
+            papel,
+            ativo,
+          }),
+        });
+        if (senha) {
+          await apiFetch(`/api/usuarios/${editandoId}/senha`, {
+            method: "PUT",
+            body: JSON.stringify({ senha_nova: senha }),
+          });
+        }
+      } else {
+        await apiFetch("/api/autenticacao/registrar", {
+          method: "POST",
+          body: JSON.stringify({
+            nome_completo: nomeCompleto,
+            usuario: nomeUsuario,
+            senha,
+            papel,
+          }),
+        });
+      }
+      cancelarEdicao();
       await carregarUsuarios();
     } catch (erro) {
-      setErroCriar(erro instanceof Error ? erro.message : "Falha ao criar");
+      setErroForm(erro instanceof Error ? erro.message : "Falha ao salvar");
     } finally {
-      setCriando(false);
+      setSalvando(false);
     }
   }
 
@@ -116,14 +157,31 @@ export default function PaginaUsuarios() {
                 <th className="py-2 pr-4">Nome</th>
                 <th className="py-2 pr-4">Usuário</th>
                 <th className="py-2 pr-4">Papel</th>
+                <th className="py-2 pr-4">Ativo</th>
+                <th className="py-2 pr-4"></th>
               </tr>
             </thead>
             <tbody>
               {usuariosFiltrados.map((u) => (
-                <tr key={u.id} className="border-b border-black/5 dark:border-white/5">
+                <tr
+                  key={u.id}
+                  className={`border-b border-black/5 dark:border-white/5 ${
+                    u.ativo ? "" : "opacity-50"
+                  }`}
+                >
                   <td className="py-2 pr-4">{u.nome_completo}</td>
                   <td className="py-2 pr-4">{u.usuario}</td>
                   <td className="py-2 pr-4">{u.papel}</td>
+                  <td className="py-2 pr-4">{u.ativo ? "Sim" : "Não"}</td>
+                  <td className="py-2 pr-4">
+                    <button
+                      onClick={() => iniciarEdicao(u)}
+                      className="flex items-center gap-1 text-marca-azul hover:text-marca-vermelho"
+                    >
+                      <Pencil size={14} />
+                      Editar
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -132,8 +190,10 @@ export default function PaginaUsuarios() {
       </div>
 
       <div className="max-w-sm">
-        <h2 className="text-lg font-semibold mb-3">Cadastrar funcionário</h2>
-        <form onSubmit={aoCriarUsuario} className="flex flex-col gap-3">
+        <h2 className="text-lg font-semibold mb-3">
+          {editandoId ? "Editar funcionário" : "Cadastrar funcionário"}
+        </h2>
+        <form onSubmit={aoSalvar} className="flex flex-col gap-3">
           <div>
             <label className="block text-sm font-medium mb-1" htmlFor="novo-nome">
               Nome completo
@@ -143,7 +203,7 @@ export default function PaginaUsuarios() {
               required
               value={nomeCompleto}
               onChange={(e) => setNomeCompleto(e.target.value)}
-              className="w-full rounded border border-black/15 dark:border-white/15 px-3 py-2 text-sm text-black dark:text-white bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-marca-azul"
+              className={CAMPO_CLASSE}
             />
           </div>
           <div>
@@ -156,21 +216,21 @@ export default function PaginaUsuarios() {
               required
               value={nomeUsuario}
               onChange={(e) => setNomeUsuario(e.target.value)}
-              className="w-full rounded border border-black/15 dark:border-white/15 px-3 py-2 text-sm text-black dark:text-white bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-marca-azul"
+              className={CAMPO_CLASSE}
             />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1" htmlFor="nova-senha">
-              Senha
+              {editandoId ? "Nova senha (deixe em branco pra manter)" : "Senha"}
             </label>
             <input
               id="nova-senha"
               type="password"
-              required
+              required={!editandoId}
               minLength={6}
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
-              className="w-full rounded border border-black/15 dark:border-white/15 px-3 py-2 text-sm text-black dark:text-white bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-marca-azul"
+              className={CAMPO_CLASSE}
             />
           </div>
           <div>
@@ -181,7 +241,7 @@ export default function PaginaUsuarios() {
               id="novo-papel"
               value={papel}
               onChange={(e) => setPapel(e.target.value)}
-              className="w-full rounded border border-black/15 dark:border-white/15 px-3 py-2 text-sm text-black dark:text-white bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-marca-azul"
+              className={CAMPO_CLASSE}
             >
               {PAPEIS.map((p) => (
                 <option key={p.valor} value={p.valor}>
@@ -191,15 +251,37 @@ export default function PaginaUsuarios() {
             </select>
           </div>
 
-          {erroCriar && <p className="text-sm text-marca-vermelho">{erroCriar}</p>}
+          {editandoId && (
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={ativo}
+                onChange={(e) => setAtivo(e.target.checked)}
+              />
+              Ativo (desmarque pra bloquear o login)
+            </label>
+          )}
 
-          <button
-            type="submit"
-            disabled={criando}
-            className="self-start rounded bg-marca-vermelho text-white font-medium px-4 py-2 text-sm hover:opacity-90 disabled:opacity-50"
-          >
-            {criando ? "Criando..." : "Criar funcionário"}
-          </button>
+          {erroForm && <p className="text-sm text-marca-vermelho">{erroForm}</p>}
+
+          <div className="flex items-center gap-3">
+            <button
+              type="submit"
+              disabled={salvando}
+              className="self-start rounded bg-marca-vermelho text-white font-medium px-4 py-2 text-sm hover:opacity-90 disabled:opacity-50"
+            >
+              {salvando ? "Salvando..." : editandoId ? "Salvar alterações" : "Criar funcionário"}
+            </button>
+            {editandoId && (
+              <button
+                type="button"
+                onClick={cancelarEdicao}
+                className="text-sm text-black/60 dark:text-white/60 hover:underline"
+              >
+                Cancelar
+              </button>
+            )}
+          </div>
         </form>
       </div>
     </div>

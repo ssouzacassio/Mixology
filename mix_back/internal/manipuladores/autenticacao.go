@@ -65,6 +65,7 @@ func (m *Manipulador) Registrar(c *gin.Context) {
 		NomeUsuario:  entrada.NomeUsuario,
 		SenhaHash:    string(hash),
 		Papel:        papel,
+		Ativo:        true,
 	}
 
 	if err := m.DB.Create(&usuario).Error; err != nil {
@@ -101,6 +102,11 @@ func (m *Manipulador) Entrar(c *gin.Context) {
 
 	if err := bcrypt.CompareHashAndPassword([]byte(usuario.SenhaHash), []byte(entrada.Senha)); err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "credenciais inválidas"})
+		return
+	}
+
+	if !usuario.Ativo {
+		c.JSON(http.StatusForbidden, gin.H{"error": "usuário desativado"})
 		return
 	}
 
