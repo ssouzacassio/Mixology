@@ -6,6 +6,7 @@ import { Pencil } from "lucide-react";
 
 import { apiFetch, obterUsuario, type Usuario } from "@/lib/api";
 import BarraPesquisa from "@/components/BarraPesquisa";
+import { formatarNomeUsuario } from "@/lib/nomeUsuario";
 
 const PAPEIS = [
   { valor: "atendente", label: "Atendente" },
@@ -217,7 +218,7 @@ export default function PaginaUsuarios() {
               type="text"
               required
               value={nomeUsuario}
-              onChange={(e) => setNomeUsuario(e.target.value)}
+              onChange={(e) => setNomeUsuario(formatarNomeUsuario(e.target.value))}
               className={CAMPO_CLASSE}
             />
           </div>

@@ -6,6 +6,7 @@ import (
 
 	"mixology/mix_back/internal/autenticacao"
 	"mixology/mix_back/internal/modelos"
+	"mixology/mix_back/internal/validacao"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -46,6 +47,12 @@ func (m *Manipulador) Registrar(c *gin.Context) {
 		return
 	}
 
+	nomeUsuario, err := validacao.NormalizarNomeUsuario(entrada.NomeUsuario)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	hash, err := bcrypt.GenerateFromPassword([]byte(entrada.Senha), bcrypt.DefaultCost)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "falha ao processar senha"})
@@ -62,7 +69,7 @@ func (m *Manipulador) Registrar(c *gin.Context) {
 
 	usuario := modelos.Usuario{
 		NomeCompleto: entrada.NomeCompleto,
-		NomeUsuario:  entrada.NomeUsuario,
+		NomeUsuario:  nomeUsuario,
 		SenhaHash:    string(hash),
 		Papel:        papel,
 		Ativo:        true,
@@ -94,8 +101,14 @@ func (m *Manipulador) Entrar(c *gin.Context) {
 		return
 	}
 
+	nomeUsuario, err := validacao.NormalizarNomeUsuario(entrada.NomeUsuario)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "credenciais inválidas"})
+		return
+	}
+
 	var usuario modelos.Usuario
-	if err := m.DB.Where("nome_usuario = ?", entrada.NomeUsuario).First(&usuario).Error; err != nil {
+	if err := m.DB.Where("nome_usuario = ?", nomeUsuario).First(&usuario).Error; err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "credenciais inválidas"})
 		return
 	}

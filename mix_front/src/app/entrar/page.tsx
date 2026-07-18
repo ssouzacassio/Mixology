@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
 import { apiFetch, salvarSessao, type Usuario } from "@/lib/api";
+import { formatarNomeUsuario } from "@/lib/nomeUsuario";
 
 export default function PaginaEntrar() {
   const router = useRouter();
@@ -60,7 +61,7 @@ export default function PaginaEntrar() {
             autoComplete="username"
             required
             value={usuario}
-            onChange={(e) => setUsuario(e.target.value)}
+            onChange={(e) => setUsuario(formatarNomeUsuario(e.target.value))}
             className="w-full rounded border border-black/15 dark:border-white/15 px-3 py-2 text-sm text-black dark:text-white bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-marca-azul"
           />
         </div>

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"mixology/mix_back/internal/modelos"
+	"mixology/mix_back/internal/validacao"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -48,8 +49,14 @@ func (m *Manipulador) AtualizarUsuario(c *gin.Context) {
 		return
 	}
 
+	nomeUsuario, err := validacao.NormalizarNomeUsuario(entrada.NomeUsuario)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	usuario.NomeCompleto = entrada.NomeCompleto
-	usuario.NomeUsuario = entrada.NomeUsuario
+	usuario.NomeUsuario = nomeUsuario
 	usuario.Papel = entrada.Papel
 	usuario.Ativo = entrada.Ativo
 
