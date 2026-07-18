@@ -1,0 +1,28 @@
+# Mixology — Frontend
+
+Frontend (Next.js + TypeScript + Tailwind) do sistema de caixa e estoque
+da Mixology Drinkeria. Conversa com a API em Go que está em `../backend`.
+
+## Rodando localmente
+
+1. Copie o arquivo de exemplo de variáveis de ambiente:
+   ```bash
+   cp .env.local.example .env.local
+   ```
+   Por padrão ele já aponta para `http://localhost:8080`, que é onde a API
+   em Go roda localmente. Só precisa mudar se você hospedar a API em outro
+   endereço.
+
+2. Instale as dependências e suba o servidor de desenvolvimento:
+   ```bash
+   npm install
+   npm run dev
+   ```
+
+3. Abra [http://localhost:3000](http://localhost:3000). Certifique-se de
+   que a API (`backend`) também está rodando — veja `../backend/README.md`.
+
+## Estrutura
+
+- `src/app/(dashboard)/` — telas do sistema: `caixa`, `produtos`, `estoque`
+- `public/marca/` — logo da Mixology usada na interface
