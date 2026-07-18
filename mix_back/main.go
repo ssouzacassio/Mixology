@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"strings"
 
 	"mixology/mix_back/internal/banco"
 	"mixology/mix_back/internal/configuracao"
@@ -17,9 +18,14 @@ func main() {
 	db := banco.Conectar(conf.URLBancoDados)
 	m := manipuladores.Novo(db, conf.SegredoJWT)
 
+	origens := strings.Split(conf.OrigemPermitida, ",")
+	for i, origem := range origens {
+		origens[i] = strings.TrimSpace(origem)
+	}
+
 	roteador := gin.Default()
 	roteador.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{conf.OrigemPermitida},
+		AllowOrigins:     origens,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		AllowCredentials: true,
