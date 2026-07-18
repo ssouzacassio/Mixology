@@ -3,6 +3,7 @@ package manipuladores
 import (
 	"errors"
 	"net/http"
+	"time"
 
 	"mixology/mix_back/internal/modelos"
 
@@ -17,13 +18,15 @@ type entradaItemVenda struct {
 }
 
 type entradaVenda struct {
-	FormaPagamento string             `json:"forma_pagamento" binding:"required,oneof=dinheiro debito credito pix"`
-	Itens          []entradaItemVenda `json:"itens" binding:"required,min=1"`
-	MesaID         *uuid.UUID         `json:"mesa_id"`
+	MesaID uuid.UUID          `json:"mesa_id" binding:"required"`
+	Itens  []entradaItemVenda `json:"itens" binding:"required,min=1"`
 }
 
-// CriarVenda registra uma venda, seus itens, e abate automaticamente do
-// estoque os insumos usados na receita de cada produto vendido.
+// CriarVenda lança produtos na comanda aberta de uma mesa (cria a comanda
+// se ainda não existir uma), soma ao total e abate na hora o estoque dos
+// insumos usados na receita de cada produto — quem lança é o atendimento.
+// A comanda só é fechada (forma de pagamento definida) pelo caixa, em
+// FecharVenda.
 func (m *Manipulador) CriarVenda(c *gin.Context) {
 	var entrada entradaVenda
 	if err := c.ShouldBindJSON(&entrada); err != nil {
@@ -42,17 +45,27 @@ func (m *Manipulador) CriarVenda(c *gin.Context) {
 			return errors.New("nenhum caixa aberto")
 		}
 
-		venda = modelos.Venda{
-			CaixaID:        caixa.ID,
-			MesaID:         entrada.MesaID,
-			CriadoPor:      usuarioUUID,
-			FormaPagamento: entrada.FormaPagamento,
-		}
-		if err := tx.Create(&venda).Error; err != nil {
-			return err
+		var mesa modelos.Mesa
+		if err := tx.First(&mesa, "id = ?", entrada.MesaID).Error; err != nil {
+			return errors.New("mesa não encontrada")
 		}
 
-		var total float64
+		erroComanda := tx.Where("mesa_id = ? AND caixa_id = ? AND status = ?", entrada.MesaID, caixa.ID, "aberta").
+			First(&venda).Error
+		if erroComanda != nil {
+			mesaID := entrada.MesaID
+			venda = modelos.Venda{
+				CaixaID:   caixa.ID,
+				MesaID:    &mesaID,
+				CriadoPor: usuarioUUID,
+				Status:    "aberta",
+			}
+			if err := tx.Create(&venda).Error; err != nil {
+				return err
+			}
+		}
+
+		var totalAdicionado float64
 
 		for _, item := range entrada.Itens {
 			var produto modelos.Produto
@@ -69,7 +82,7 @@ func (m *Manipulador) CriarVenda(c *gin.Context) {
 			if err := tx.Create(&itemVenda).Error; err != nil {
 				return err
 			}
-			total += produto.Preco * item.Quantidade
+			totalAdicionado += produto.Preco * item.Quantidade
 
 			var itensReceita []modelos.ItemReceita
 			if err := tx.Where("produto_id = ?", produto.ID).Find(&itensReceita).Error; err != nil {
@@ -99,15 +112,13 @@ func (m *Manipulador) CriarVenda(c *gin.Context) {
 			}
 		}
 
-		venda.Total = total
+		venda.Total += totalAdicionado
 		if err := tx.Save(&venda).Error; err != nil {
 			return err
 		}
 
-		if entrada.MesaID != nil {
-			if err := tx.Model(&modelos.Mesa{}).
-				Where("id = ?", *entrada.MesaID).
-				Update("status", "livre").Error; err != nil {
+		if mesa.Status != "ocupada" {
+			if err := tx.Model(&mesa).Update("status", "ocupada").Error; err != nil {
 				return err
 			}
 		}
@@ -120,13 +131,73 @@ func (m *Manipulador) CriarVenda(c *gin.Context) {
 		return
 	}
 
-	m.DB.Preload("Itens").First(&venda, "id = ?", venda.ID)
+	m.DB.Preload("Itens").Preload("Mesa").First(&venda, "id = ?", venda.ID)
 	c.JSON(http.StatusCreated, venda)
+}
+
+type entradaFecharVenda struct {
+	FormaPagamento string `json:"forma_pagamento" binding:"required,oneof=dinheiro debito credito pix"`
+}
+
+// FecharVenda é usado pelo caixa: define a forma de pagamento, marca a
+// comanda como fechada e libera a mesa de volta pra "livre".
+func (m *Manipulador) FecharVenda(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "id inválido"})
+		return
+	}
+
+	var venda modelos.Venda
+	if err := m.DB.First(&venda, "id = ?", id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "conta não encontrada"})
+		return
+	}
+
+	if venda.Status != "aberta" {
+		c.JSON(http.StatusConflict, gin.H{"error": "essa conta já foi fechada"})
+		return
+	}
+
+	var entrada entradaFecharVenda
+	if err := c.ShouldBindJSON(&entrada); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	agora := time.Now()
+
+	err = m.DB.Transaction(func(tx *gorm.DB) error {
+		venda.FormaPagamento = entrada.FormaPagamento
+		venda.Status = "fechada"
+		venda.FechadoEm = &agora
+		if err := tx.Save(&venda).Error; err != nil {
+			return err
+		}
+
+		if venda.MesaID != nil {
+			if err := tx.Model(&modelos.Mesa{}).
+				Where("id = ?", *venda.MesaID).
+				Update("status", "livre").Error; err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "falha ao fechar conta"})
+		return
+	}
+
+	m.DB.Preload("Itens").Preload("Mesa").First(&venda, "id = ?", venda.ID)
+	c.JSON(http.StatusOK, venda)
 }
 
 func (m *Manipulador) ListarVendas(c *gin.Context) {
 	var vendas []modelos.Venda
-	if err := m.DB.Preload("Itens").Order("criado_em desc").Find(&vendas).Error; err != nil {
+	if err := m.DB.Preload("Itens").Preload("Mesa").Order("criado_em desc").Find(&vendas).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "falha ao listar vendas"})
 		return
 	}

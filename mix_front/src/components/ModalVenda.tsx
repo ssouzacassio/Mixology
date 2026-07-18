@@ -6,16 +6,6 @@ import { apiFetch } from "@/lib/api";
 import type { Mesa, Produto } from "@/lib/tipos";
 import Modal from "./Modal";
 
-const FORMAS_PAGAMENTO = [
-  { valor: "dinheiro", label: "Dinheiro" },
-  { valor: "debito", label: "Cartão débito" },
-  { valor: "credito", label: "Cartão crédito" },
-  { valor: "pix", label: "Pix" },
-];
-
-const CAMPO_CLASSE =
-  "w-full rounded border border-black/15 dark:border-white/15 px-3 py-2 text-sm text-black dark:text-white bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-marca-azul";
-
 function formatarReal(valor: number) {
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
@@ -32,7 +22,6 @@ export default function ModalVenda({
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [quantidades, setQuantidades] = useState<Record<string, number>>({});
-  const [formaPagamento, setFormaPagamento] = useState("dinheiro");
   const [erro, setErro] = useState("");
   const [enviando, setEnviando] = useState(false);
 
@@ -74,7 +63,6 @@ export default function ModalVenda({
       await apiFetch("/api/vendas", {
         method: "POST",
         body: JSON.stringify({
-          forma_pagamento: formaPagamento,
           mesa_id: mesa.id,
           itens: itensSelecionados.map((item) => ({
             produto_id: item.produto.id,
@@ -84,14 +72,14 @@ export default function ModalVenda({
       });
       aoConcluir();
     } catch (erroCapturado) {
-      setErro(erroCapturado instanceof Error ? erroCapturado.message : "Falha ao registrar venda");
+      setErro(erroCapturado instanceof Error ? erroCapturado.message : "Falha ao lançar pedido");
     } finally {
       setEnviando(false);
     }
   }
 
   return (
-    <Modal titulo={`Fechar conta — ${mesa.nome}`} aoFechar={aoFechar}>
+    <Modal titulo={`Lançar pedido — ${mesa.nome}`} aoFechar={aoFechar}>
       {carregando && <p className="text-sm text-black/60 dark:text-white/60">Carregando produtos...</p>}
 
       {!carregando && produtos.length === 0 && (
@@ -125,25 +113,7 @@ export default function ModalVenda({
             ))}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1" htmlFor="forma-pagamento">
-              Forma de pagamento
-            </label>
-            <select
-              id="forma-pagamento"
-              value={formaPagamento}
-              onChange={(e) => setFormaPagamento(e.target.value)}
-              className={CAMPO_CLASSE}
-            >
-              {FORMAS_PAGAMENTO.map((f) => (
-                <option key={f.valor} value={f.valor}>
-                  {f.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <p className="text-lg font-semibold">Total: {formatarReal(total)}</p>
+          <p className="text-lg font-semibold">Total deste pedido: {formatarReal(total)}</p>
 
           {erro && <p className="text-sm text-marca-vermelho">{erro}</p>}
 
@@ -152,7 +122,7 @@ export default function ModalVenda({
             disabled={enviando}
             className="self-start rounded bg-marca-vermelho text-white font-medium px-4 py-2 text-sm hover:opacity-90 disabled:opacity-50"
           >
-            {enviando ? "Registrando..." : "Confirmar pagamento"}
+            {enviando ? "Lançando..." : "Lançar pedido"}
           </button>
         </form>
       )}

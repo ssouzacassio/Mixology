@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { Lock, LockOpen } from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
-import type { Caixa } from "@/lib/tipos";
+import type { Caixa, Venda } from "@/lib/tipos";
 import Modal from "@/components/Modal";
+import ModalFecharConta from "@/components/ModalFecharConta";
 
 const LABELS_PAGAMENTO: Record<string, string> = {
   dinheiro: "Dinheiro",
@@ -34,6 +35,8 @@ export default function PaginaCaixa() {
   const [erro, setErro] = useState("");
   const [processando, setProcessando] = useState(false);
   const [resumo, setResumo] = useState<Record<string, number>>({});
+  const [contasAbertas, setContasAbertas] = useState<Venda[]>([]);
+  const [contaSelecionada, setContaSelecionada] = useState<Venda | null>(null);
 
   useEffect(() => {
     carregarCaixaAtual();
@@ -42,6 +45,7 @@ export default function PaginaCaixa() {
   useEffect(() => {
     if (caixaAtual) {
       carregarResumo(caixaAtual.id);
+      carregarContasAbertas();
     }
   }, [caixaAtual?.id]);
 
@@ -71,6 +75,21 @@ export default function PaginaCaixa() {
     }
   }
 
+  async function carregarContasAbertas() {
+    try {
+      const dados = (await apiFetch("/api/vendas")) as Venda[];
+      setContasAbertas(dados.filter((v) => v.status === "aberta"));
+    } catch {
+      setContasAbertas([]);
+    }
+  }
+
+  async function aoFecharConta() {
+    setContaSelecionada(null);
+    await carregarContasAbertas();
+    if (caixaAtual) await carregarResumo(caixaAtual.id);
+  }
+
   async function aoAbrirCaixa() {
     setErro("");
     setProcessando(true);
@@ -98,6 +117,7 @@ export default function PaginaCaixa() {
       });
       setCaixaAtual(null);
       setResumo({});
+      setContasAbertas([]);
       setConfirmandoFechamento(false);
     } catch (erroCapturado) {
       setErro(erroCapturado instanceof Error ? erroCapturado.message : "Falha ao fechar caixa");
@@ -150,15 +170,38 @@ export default function PaginaCaixa() {
       )}
 
       {!carregandoCaixa && caixaAtual && (
-        <div>
-          <h2 className="text-lg font-semibold mb-3">Vendas por forma de pagamento</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl">
-            {Object.entries(LABELS_PAGAMENTO).map(([chave, label]) => (
-              <div key={chave} className="rounded-lg border border-marca-azul/20 p-4">
-                <p className="text-xs text-black/60 dark:text-white/60">{label}</p>
-                <p className="text-lg font-semibold">{formatarReal(resumo[chave] || 0)}</p>
-              </div>
-            ))}
+        <div className="flex flex-col gap-8">
+          <div>
+            <h2 className="text-lg font-semibold mb-3">Vendas por forma de pagamento</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl">
+              {Object.entries(LABELS_PAGAMENTO).map(([chave, label]) => (
+                <div key={chave} className="rounded-lg border border-marca-azul/20 p-4">
+                  <p className="text-xs text-black/60 dark:text-white/60">{label}</p>
+                  <p className="text-lg font-semibold">{formatarReal(resumo[chave] || 0)}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-lg font-semibold mb-3">Mesas abertas</h2>
+            {contasAbertas.length === 0 && (
+              <p className="text-sm text-black/60 dark:text-white/60">
+                Nenhuma conta em aberto no momento.
+              </p>
+            )}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl">
+              {contasAbertas.map((conta) => (
+                <button
+                  key={conta.id}
+                  onClick={() => setContaSelecionada(conta)}
+                  className="rounded-lg border border-marca-azul/20 p-4 text-left hover:border-marca-vermelho/40 hover:shadow-sm transition-all"
+                >
+                  <p className="text-sm font-medium">{conta.mesa?.nome ?? "Mesa"}</p>
+                  <p className="text-lg font-semibold">{formatarReal(conta.total)}</p>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -186,6 +229,14 @@ export default function PaginaCaixa() {
             </button>
           </div>
         </Modal>
+      )}
+
+      {contaSelecionada && (
+        <ModalFecharConta
+          venda={contaSelecionada}
+          aoFechar={() => setContaSelecionada(null)}
+          aoConcluir={aoFecharConta}
+        />
       )}
     </div>
   );

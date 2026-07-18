@@ -26,3 +26,23 @@ export type Caixa = {
   aberto_em: string;
   fechado_em?: string;
 };
+
+export type ItemVenda = {
+  id: string;
+  produto_id: string;
+  quantidade: number;
+  preco_unitario: number;
+};
+
+export type Venda = {
+  id: string;
+  caixa_id: string;
+  mesa_id?: string;
+  mesa?: Mesa;
+  total: number;
+  forma_pagamento: string;
+  status: string;
+  criado_em: string;
+  fechado_em?: string;
+  itens: ItemVenda[];
+};

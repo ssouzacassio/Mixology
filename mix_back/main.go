@@ -60,6 +60,7 @@ func main() {
 
 	autorizado.GET("/vendas", m.ListarVendas)
 	autorizado.POST("/vendas", m.CriarVenda)
+	autorizado.PUT("/vendas/:id/fechar", m.FecharVenda)
 
 	autorizado.GET("/mesas", m.ListarMesas)
 	autorizado.POST("/mesas", m.CriarMesa)
