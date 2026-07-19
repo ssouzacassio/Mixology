@@ -34,6 +34,17 @@ export type ItemVenda = {
   preco_unitario: number;
 };
 
+export type Boleto = {
+  id: string;
+  descricao: string;
+  categoria: string;
+  valor: number;
+  vencimento: string;
+  status: string;
+  pago_em?: string;
+  criado_em: string;
+};
+
 export type Venda = {
   id: string;
   caixa_id: string;

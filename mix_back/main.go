@@ -78,6 +78,15 @@ func main() {
 	autorizado.PUT("/usuarios/:id", protecao.ExigirPapel("admin"), m.AtualizarUsuario)
 	autorizado.PUT("/usuarios/:id/senha", protecao.ExigirPapel("admin"), m.RedefinirSenhaUsuario)
 
+	financeiro := autorizado.Group("", protecao.ExigirPapel("admin", "gerente"))
+	financeiro.GET("/boletos", m.ListarBoletos)
+	financeiro.POST("/boletos", m.CriarBoleto)
+	financeiro.PUT("/boletos/:id", m.AtualizarBoleto)
+	financeiro.PUT("/boletos/:id/pagar", m.MarcarBoletoPago)
+	financeiro.PUT("/boletos/:id/reabrir", m.ReabrirBoleto)
+	financeiro.DELETE("/boletos/:id", m.ExcluirBoleto)
+	financeiro.GET("/financeiro/totais-mensais", m.TotaisMensais)
+
 	log.Printf("API rodando na porta %s", conf.Porta)
 	if err := roteador.Run(":" + conf.Porta); err != nil {
 		log.Fatalf("falha ao iniciar servidor: %v", err)

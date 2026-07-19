@@ -179,3 +179,24 @@ func (m *Mesa) BeforeCreate(tx *gorm.DB) error {
 	}
 	return nil
 }
+
+type Boleto struct {
+	ID         uuid.UUID  `gorm:"type:uuid;primaryKey" json:"id"`
+	Descricao  string     `gorm:"not null" json:"descricao"`
+	Categoria  string     `gorm:"not null;default:''" json:"categoria"`
+	Valor      float64    `gorm:"not null" json:"valor"`
+	Vencimento time.Time  `gorm:"not null" json:"vencimento"`
+	Status     string     `gorm:"not null;default:pendente" json:"status"`
+	PagoEm     *time.Time `json:"pago_em,omitempty"`
+	CriadoPor  uuid.UUID  `gorm:"type:uuid;not null" json:"criado_por"`
+	CriadoEm   time.Time  `gorm:"autoCreateTime" json:"criado_em"`
+}
+
+func (Boleto) TableName() string { return "boletos" }
+
+func (b *Boleto) BeforeCreate(tx *gorm.DB) error {
+	if b.ID == uuid.Nil {
+		b.ID = uuid.New()
+	}
+	return nil
+}

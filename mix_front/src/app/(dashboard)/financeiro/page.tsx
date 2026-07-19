@@ -55,7 +55,7 @@ export default function PaginaFinanceiro() {
 
   return (
     <div>
-      <h1 className="text-xl font-semibold mb-4">Financeiro — histórico de caixas</h1>
+      <h1 className="text-xl font-semibold mb-4">Fechamento de caixa</h1>
 
       {carregando && <p className="text-sm text-black/60 dark:text-white/60">Carregando...</p>}
       {erro && <p className="text-sm text-marca-vermelho">{erro}</p>}
