@@ -193,7 +193,7 @@ export default function PaginaBoletos() {
                           title="Marcar como pago"
                         >
                           <Check size={14} />
-                          Pago
+                          Marcar pago
                         </button>
                         <button
                           onClick={() => iniciarEdicao(b)}
