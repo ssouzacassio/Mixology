@@ -10,7 +10,34 @@ import (
 	"github.com/google/uuid"
 )
 
+// inicioDoDiaUTC retorna a meia-noite UTC de hoje, para comparar com
+// Vencimento (sempre gravado como meia-noite UTC pelo frontend).
+func inicioDoDiaUTC() time.Time {
+	agora := time.Now().UTC()
+	return time.Date(agora.Year(), agora.Month(), agora.Day(), 0, 0, 0, 0, time.UTC)
+}
+
+// calcularStatusBoleto decide "a_vencer" ou "vencido" a partir da data de
+// vencimento; nunca retorna "pago" (isso só acontece via MarcarBoletoPago).
+func calcularStatusBoleto(vencimento time.Time) string {
+	if vencimento.Before(inicioDoDiaUTC()) {
+		return "vencido"
+	}
+	return "a_vencer"
+}
+
 func (m *Manipulador) ListarBoletos(c *gin.Context) {
+	hoje := inicioDoDiaUTC()
+
+	// "pendente" é o valor antigo (antes de existir a distinção a_vencer/vencido);
+	// migra para o esquema novo junto com o recálculo normal.
+	m.DB.Model(&modelos.Boleto{}).
+		Where("status IN (?, ?) AND vencimento < ?", "a_vencer", "pendente", hoje).
+		Update("status", "vencido")
+	m.DB.Model(&modelos.Boleto{}).
+		Where("status IN (?, ?) AND vencimento >= ?", "vencido", "pendente", hoje).
+		Update("status", "a_vencer")
+
 	var boletos []modelos.Boleto
 	if err := m.DB.Order("vencimento").Find(&boletos).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "falha ao listar boletos"})
@@ -41,7 +68,7 @@ func (m *Manipulador) CriarBoleto(c *gin.Context) {
 		Categoria:  entrada.Categoria,
 		Valor:      entrada.Valor,
 		Vencimento: entrada.Vencimento,
-		Status:     "pendente",
+		Status:     calcularStatusBoleto(entrada.Vencimento),
 		CriadoPor:  usuarioUUID,
 	}
 	if err := m.DB.Create(&boleto).Error; err != nil {
@@ -75,6 +102,9 @@ func (m *Manipulador) AtualizarBoleto(c *gin.Context) {
 	boleto.Categoria = entrada.Categoria
 	boleto.Valor = entrada.Valor
 	boleto.Vencimento = entrada.Vencimento
+	if boleto.Status != "pago" {
+		boleto.Status = calcularStatusBoleto(entrada.Vencimento)
+	}
 	if err := m.DB.Save(&boleto).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "falha ao atualizar boleto"})
 		return
@@ -120,7 +150,7 @@ func (m *Manipulador) ReabrirBoleto(c *gin.Context) {
 		return
 	}
 
-	boleto.Status = "pendente"
+	boleto.Status = calcularStatusBoleto(boleto.Vencimento)
 	boleto.PagoEm = nil
 	if err := m.DB.Save(&boleto).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "falha ao atualizar boleto"})

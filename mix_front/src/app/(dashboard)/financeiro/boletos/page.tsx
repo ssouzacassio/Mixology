@@ -134,7 +134,7 @@ export default function PaginaBoletos() {
     return null;
   }
 
-  const pendentes = boletos.filter((b) => b.status === "pendente");
+  const pendentes = boletos.filter((b) => b.status !== "pago");
   const pagos = boletos.filter((b) => b.status === "pago");
   const totalPendente = pendentes.reduce((soma, b) => soma + b.valor, 0);
 
@@ -161,16 +161,29 @@ export default function PaginaBoletos() {
                   <th className="py-2 pr-4">Descrição</th>
                   <th className="py-2 pr-4">Categoria</th>
                   <th className="py-2 pr-4">Vencimento</th>
+                  <th className="py-2 pr-4">Status</th>
                   <th className="py-2 pr-4">Valor</th>
                   <th className="py-2 pr-4"></th>
                 </tr>
               </thead>
               <tbody>
                 {pendentes.map((b) => (
-                  <tr key={b.id} className="border-b border-black/5 dark:border-white/5">
+                  <tr
+                    key={b.id}
+                    className={`border-b border-black/5 dark:border-white/5 ${
+                      b.status === "vencido" ? "bg-marca-vermelho/5" : ""
+                    }`}
+                  >
                     <td className="py-2 pr-4">{b.descricao}</td>
                     <td className="py-2 pr-4">{b.categoria || "—"}</td>
                     <td className="py-2 pr-4">{formatarData(b.vencimento)}</td>
+                    <td className="py-2 pr-4">
+                      {b.status === "vencido" ? (
+                        <span className="font-semibold text-marca-vermelho">Vencido</span>
+                      ) : (
+                        <span className="text-black/60 dark:text-white/60">A vencer</span>
+                      )}
+                    </td>
                     <td className="py-2 pr-4">{formatarReal(b.valor)}</td>
                     <td className="py-2 pr-4">
                       <div className="flex items-center gap-3">

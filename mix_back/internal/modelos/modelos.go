@@ -186,7 +186,7 @@ type Boleto struct {
 	Categoria  string     `gorm:"not null;default:''" json:"categoria"`
 	Valor      float64    `gorm:"not null" json:"valor"`
 	Vencimento time.Time  `gorm:"not null" json:"vencimento"`
-	Status     string     `gorm:"not null;default:pendente" json:"status"`
+	Status     string     `gorm:"not null;default:a_vencer" json:"status"`
 	PagoEm     *time.Time `json:"pago_em,omitempty"`
 	CriadoPor  uuid.UUID  `gorm:"type:uuid;not null" json:"criado_por"`
 	CriadoEm   time.Time  `gorm:"autoCreateTime" json:"criado_em"`
