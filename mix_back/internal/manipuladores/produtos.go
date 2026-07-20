@@ -24,6 +24,7 @@ type entradaProduto struct {
 	Descricao string  `json:"descricao"`
 	Categoria string  `json:"categoria"`
 	Preco     float64 `json:"preco" binding:"required,gt=0"`
+	Ativo     *bool   `json:"ativo"`
 }
 
 func (m *Manipulador) CriarProduto(c *gin.Context) {
@@ -72,6 +73,9 @@ func (m *Manipulador) AtualizarProduto(c *gin.Context) {
 	produto.Descricao = entrada.Descricao
 	produto.Categoria = entrada.Categoria
 	produto.Preco = entrada.Preco
+	if entrada.Ativo != nil {
+		produto.Ativo = *entrada.Ativo
+	}
 
 	if err := m.DB.Save(&produto).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "falha ao atualizar produto"})
