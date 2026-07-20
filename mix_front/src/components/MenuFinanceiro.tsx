@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { CalendarDays, ChevronDown, Receipt, Wallet } from "lucide-react";
+import { CalendarDays, ChevronDown, Receipt, ShoppingBag, Wallet } from "lucide-react";
 
 export const OPCOES_FINANCEIRO = [
   { href: "/financeiro", label: "Fechamento de caixa", Icone: Wallet },
   { href: "/financeiro/boletos", label: "Boletos a pagar", Icone: Receipt },
   { href: "/financeiro/mensal", label: "Total mês", Icone: CalendarDays },
+  { href: "/financeiro/itens", label: "Itens vendidos", Icone: ShoppingBag },
 ];
 
 export default function MenuFinanceiro({ linkClasse }: { linkClasse: string }) {

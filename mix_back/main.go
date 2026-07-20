@@ -86,6 +86,7 @@ func main() {
 	financeiro.PUT("/boletos/:id/reabrir", m.ReabrirBoleto)
 	financeiro.DELETE("/boletos/:id", m.ExcluirBoleto)
 	financeiro.GET("/financeiro/totais-mensais", m.TotaisMensais)
+	financeiro.GET("/financeiro/itens-vendidos", m.ItensVendidos)
 
 	log.Printf("API rodando na porta %s", conf.Porta)
 	if err := roteador.Run(":" + conf.Porta); err != nil {

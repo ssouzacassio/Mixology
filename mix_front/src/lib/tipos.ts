@@ -45,6 +45,13 @@ export type Boleto = {
   criado_em: string;
 };
 
+export type ItemVendido = {
+  produto_id: string;
+  nome: string;
+  quantidade: number;
+  total: number;
+};
+
 export type Venda = {
   id: string;
   caixa_id: string;
