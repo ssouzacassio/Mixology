@@ -12,7 +12,10 @@ import (
 
 func (m *Manipulador) ListarProdutos(c *gin.Context) {
 	var produtos []modelos.Produto
-	if err := m.DB.Order("nome").Find(&produtos).Error; err != nil {
+	if err := m.DB.
+		Preload("GruposOpcao.GrupoOpcao.Opcoes").
+		Order("nome").
+		Find(&produtos).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "falha ao listar produtos"})
 		return
 	}

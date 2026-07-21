@@ -2,6 +2,7 @@ package manipuladores
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -13,8 +14,9 @@ import (
 )
 
 type entradaItemVenda struct {
-	ProdutoID  uuid.UUID `json:"produto_id" binding:"required"`
-	Quantidade float64   `json:"quantidade" binding:"required,gt=0"`
+	ProdutoID  uuid.UUID   `json:"produto_id" binding:"required"`
+	Quantidade float64     `json:"quantidade" binding:"required,gt=0"`
+	OpcoesIDs  []uuid.UUID `json:"opcoes_ids"`
 }
 
 type entradaVenda struct {
@@ -84,6 +86,30 @@ func (m *Manipulador) CriarVenda(c *gin.Context) {
 				return errors.New("produto não encontrado")
 			}
 
+			var gruposProduto []modelos.ProdutoGrupoOpcao
+			if err := tx.Where("produto_id = ?", produto.ID).Find(&gruposProduto).Error; err != nil {
+				return err
+			}
+
+			var opcoesEscolhidas []modelos.Opcao
+			if len(item.OpcoesIDs) > 0 {
+				if err := tx.Where("id IN ?", item.OpcoesIDs).Find(&opcoesEscolhidas).Error; err != nil {
+					return err
+				}
+			}
+
+			if len(gruposProduto) > 0 {
+				grupoEscolhido := map[uuid.UUID]bool{}
+				for _, opcao := range opcoesEscolhidas {
+					grupoEscolhido[opcao.GrupoOpcaoID] = true
+				}
+				for _, vinculo := range gruposProduto {
+					if !grupoEscolhido[vinculo.GrupoOpcaoID] {
+						return fmt.Errorf("escolha uma opção obrigatória para %s", produto.Nome)
+					}
+				}
+			}
+
 			itemVenda := modelos.ItemVenda{
 				VendaID:       venda.ID,
 				ProdutoID:     produto.ID,
@@ -94,6 +120,35 @@ func (m *Manipulador) CriarVenda(c *gin.Context) {
 				return err
 			}
 			totalAdicionado += produto.Preco * item.Quantidade
+
+			for _, opcao := range opcoesEscolhidas {
+				itemOpcao := modelos.ItemVendaOpcao{ItemVendaID: itemVenda.ID, OpcaoID: opcao.ID}
+				if err := tx.Create(&itemOpcao).Error; err != nil {
+					return err
+				}
+
+				if opcao.InsumoID != nil && opcao.Quantidade > 0 {
+					consumido := opcao.Quantidade * item.Quantidade
+
+					if err := tx.Model(&modelos.Insumo{}).
+						Where("id = ?", *opcao.InsumoID).
+						UpdateColumn("quantidade_estoque", gorm.Expr("quantidade_estoque - ?", consumido)).Error; err != nil {
+						return err
+					}
+
+					movimento := modelos.MovimentoEstoque{
+						InsumoID:           *opcao.InsumoID,
+						Tipo:               "saida",
+						Quantidade:         consumido,
+						Motivo:             "Venda automática (opção: " + opcao.Nome + ")",
+						VendaRelacionadaID: &venda.ID,
+						CriadoPor:          &usuarioUUID,
+					}
+					if err := tx.Create(&movimento).Error; err != nil {
+						return err
+					}
+				}
+			}
 
 			var itensReceita []modelos.ItemReceita
 			if err := tx.Where("produto_id = ?", produto.ID).Find(&itensReceita).Error; err != nil {
@@ -142,7 +197,7 @@ func (m *Manipulador) CriarVenda(c *gin.Context) {
 		return
 	}
 
-	m.DB.Preload("Itens").Preload("Mesa").First(&venda, "id = ?", venda.ID)
+	m.DB.Preload("Itens.Opcoes.Opcao.GrupoOpcao").Preload("Mesa").First(&venda, "id = ?", venda.ID)
 	c.JSON(http.StatusCreated, venda)
 }
 
@@ -212,13 +267,13 @@ func (m *Manipulador) FecharVenda(c *gin.Context) {
 		return
 	}
 
-	m.DB.Preload("Itens").Preload("Mesa").First(&venda, "id = ?", venda.ID)
+	m.DB.Preload("Itens.Opcoes.Opcao.GrupoOpcao").Preload("Mesa").First(&venda, "id = ?", venda.ID)
 	c.JSON(http.StatusOK, venda)
 }
 
 func (m *Manipulador) ListarVendas(c *gin.Context) {
 	var vendas []modelos.Venda
-	if err := m.DB.Preload("Itens").Preload("Mesa").Order("criado_em desc").Find(&vendas).Error; err != nil {
+	if err := m.DB.Preload("Itens.Opcoes.Opcao.GrupoOpcao").Preload("Mesa").Order("criado_em desc").Find(&vendas).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "falha ao listar vendas"})
 		return
 	}

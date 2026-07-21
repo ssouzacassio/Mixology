@@ -27,13 +27,14 @@ func (u *Usuario) BeforeCreate(tx *gorm.DB) error {
 }
 
 type Produto struct {
-	ID         uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
-	Nome       string    `gorm:"not null" json:"nome"`
-	Descricao  string    `json:"descricao"`
-	Categoria  string    `json:"categoria"`
-	Preco      float64   `gorm:"not null" json:"preco"`
-	Ativo      bool      `gorm:"not null;default:true" json:"ativo"`
-	CriadoEm   time.Time `gorm:"autoCreateTime" json:"criado_em"`
+	ID          uuid.UUID           `gorm:"type:uuid;primaryKey" json:"id"`
+	Nome        string              `gorm:"not null" json:"nome"`
+	Descricao   string              `json:"descricao"`
+	Categoria   string              `json:"categoria"`
+	Preco       float64             `gorm:"not null" json:"preco"`
+	Ativo       bool                `gorm:"not null;default:true" json:"ativo"`
+	CriadoEm    time.Time           `gorm:"autoCreateTime" json:"criado_em"`
+	GruposOpcao []ProdutoGrupoOpcao `gorm:"foreignKey:ProdutoID" json:"grupos_opcao,omitempty"`
 }
 
 func (Produto) TableName() string { return "produtos" }
@@ -65,11 +66,11 @@ func (i *Insumo) BeforeCreate(tx *gorm.DB) error {
 }
 
 type ItemReceita struct {
-	ID        uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
-	ProdutoID uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:idx_produto_insumo" json:"produto_id"`
-	InsumoID  uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:idx_produto_insumo" json:"insumo_id"`
-	Quantidade float64  `gorm:"not null" json:"quantidade"`
-	Insumo    *Insumo   `gorm:"foreignKey:InsumoID" json:"insumo,omitempty"`
+	ID         uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
+	ProdutoID  uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:idx_produto_insumo" json:"produto_id"`
+	InsumoID   uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:idx_produto_insumo" json:"insumo_id"`
+	Quantidade float64   `gorm:"not null" json:"quantidade"`
+	Insumo     *Insumo   `gorm:"foreignKey:InsumoID" json:"insumo,omitempty"`
 }
 
 func (ItemReceita) TableName() string { return "itens_receita" }
@@ -128,11 +129,12 @@ func (v *Venda) BeforeCreate(tx *gorm.DB) error {
 }
 
 type ItemVenda struct {
-	ID             uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
-	VendaID        uuid.UUID `gorm:"type:uuid;not null" json:"venda_id"`
-	ProdutoID      uuid.UUID `gorm:"type:uuid;not null" json:"produto_id"`
-	Quantidade     float64   `gorm:"not null" json:"quantidade"`
-	PrecoUnitario  float64   `gorm:"not null" json:"preco_unitario"`
+	ID            uuid.UUID        `gorm:"type:uuid;primaryKey" json:"id"`
+	VendaID       uuid.UUID        `gorm:"type:uuid;not null" json:"venda_id"`
+	ProdutoID     uuid.UUID        `gorm:"type:uuid;not null" json:"produto_id"`
+	Quantidade    float64          `gorm:"not null" json:"quantidade"`
+	PrecoUnitario float64          `gorm:"not null" json:"preco_unitario"`
+	Opcoes        []ItemVendaOpcao `gorm:"foreignKey:ItemVendaID" json:"opcoes,omitempty"`
 }
 
 func (ItemVenda) TableName() string { return "itens_venda" }
@@ -145,14 +147,14 @@ func (iv *ItemVenda) BeforeCreate(tx *gorm.DB) error {
 }
 
 type MovimentoEstoque struct {
-	ID                  uuid.UUID  `gorm:"type:uuid;primaryKey" json:"id"`
-	InsumoID            uuid.UUID  `gorm:"type:uuid;not null" json:"insumo_id"`
-	Tipo                string     `gorm:"not null" json:"tipo"`
-	Quantidade          float64    `gorm:"not null" json:"quantidade"`
-	Motivo              string     `json:"motivo"`
-	VendaRelacionadaID  *uuid.UUID `gorm:"type:uuid" json:"venda_relacionada_id,omitempty"`
-	CriadoPor           *uuid.UUID `gorm:"type:uuid" json:"criado_por,omitempty"`
-	CriadoEm            time.Time  `gorm:"autoCreateTime" json:"criado_em"`
+	ID                 uuid.UUID  `gorm:"type:uuid;primaryKey" json:"id"`
+	InsumoID           uuid.UUID  `gorm:"type:uuid;not null" json:"insumo_id"`
+	Tipo               string     `gorm:"not null" json:"tipo"`
+	Quantidade         float64    `gorm:"not null" json:"quantidade"`
+	Motivo             string     `json:"motivo"`
+	VendaRelacionadaID *uuid.UUID `gorm:"type:uuid" json:"venda_relacionada_id,omitempty"`
+	CriadoPor          *uuid.UUID `gorm:"type:uuid" json:"criado_por,omitempty"`
+	CriadoEm           time.Time  `gorm:"autoCreateTime" json:"criado_em"`
 }
 
 func (MovimentoEstoque) TableName() string { return "movimentos_estoque" }
@@ -176,6 +178,74 @@ func (Mesa) TableName() string { return "mesas" }
 func (m *Mesa) BeforeCreate(tx *gorm.DB) error {
 	if m.ID == uuid.Nil {
 		m.ID = uuid.New()
+	}
+	return nil
+}
+
+type GrupoOpcao struct {
+	ID       uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
+	Nome     string    `gorm:"not null;uniqueIndex" json:"nome"`
+	CriadoEm time.Time `gorm:"autoCreateTime" json:"criado_em"`
+	Opcoes   []Opcao   `gorm:"foreignKey:GrupoOpcaoID" json:"opcoes,omitempty"`
+}
+
+func (GrupoOpcao) TableName() string { return "grupos_opcao" }
+
+func (g *GrupoOpcao) BeforeCreate(tx *gorm.DB) error {
+	if g.ID == uuid.Nil {
+		g.ID = uuid.New()
+	}
+	return nil
+}
+
+type Opcao struct {
+	ID           uuid.UUID   `gorm:"type:uuid;primaryKey" json:"id"`
+	GrupoOpcaoID uuid.UUID   `gorm:"type:uuid;not null" json:"grupo_opcao_id"`
+	GrupoOpcao   *GrupoOpcao `gorm:"foreignKey:GrupoOpcaoID" json:"grupo_opcao,omitempty"`
+	Nome         string      `gorm:"not null" json:"nome"`
+	InsumoID     *uuid.UUID  `gorm:"type:uuid" json:"insumo_id,omitempty"`
+	Insumo       *Insumo     `gorm:"foreignKey:InsumoID" json:"insumo,omitempty"`
+	Quantidade   float64     `gorm:"not null;default:0" json:"quantidade"`
+	CriadoEm     time.Time   `gorm:"autoCreateTime" json:"criado_em"`
+}
+
+func (Opcao) TableName() string { return "opcoes" }
+
+func (o *Opcao) BeforeCreate(tx *gorm.DB) error {
+	if o.ID == uuid.Nil {
+		o.ID = uuid.New()
+	}
+	return nil
+}
+
+type ProdutoGrupoOpcao struct {
+	ID           uuid.UUID   `gorm:"type:uuid;primaryKey" json:"id"`
+	ProdutoID    uuid.UUID   `gorm:"type:uuid;not null;uniqueIndex:idx_produto_grupo" json:"produto_id"`
+	GrupoOpcaoID uuid.UUID   `gorm:"type:uuid;not null;uniqueIndex:idx_produto_grupo" json:"grupo_opcao_id"`
+	GrupoOpcao   *GrupoOpcao `gorm:"foreignKey:GrupoOpcaoID" json:"grupo_opcao,omitempty"`
+}
+
+func (ProdutoGrupoOpcao) TableName() string { return "produto_grupos_opcao" }
+
+func (p *ProdutoGrupoOpcao) BeforeCreate(tx *gorm.DB) error {
+	if p.ID == uuid.Nil {
+		p.ID = uuid.New()
+	}
+	return nil
+}
+
+type ItemVendaOpcao struct {
+	ID          uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
+	ItemVendaID uuid.UUID `gorm:"type:uuid;not null" json:"item_venda_id"`
+	OpcaoID     uuid.UUID `gorm:"type:uuid;not null" json:"opcao_id"`
+	Opcao       *Opcao    `gorm:"foreignKey:OpcaoID" json:"opcao,omitempty"`
+}
+
+func (ItemVendaOpcao) TableName() string { return "itens_venda_opcoes" }
+
+func (i *ItemVendaOpcao) BeforeCreate(tx *gorm.DB) error {
+	if i.ID == uuid.Nil {
+		i.ID = uuid.New()
 	}
 	return nil
 }

@@ -48,6 +48,15 @@ func main() {
 	autorizado.DELETE("/produtos/:id", protecao.ExigirPapel("admin"), m.ExcluirProduto)
 	autorizado.GET("/produtos/:id/receita", m.ObterReceitaProduto)
 	autorizado.PUT("/produtos/:id/receita", m.DefinirReceitaProduto)
+	autorizado.PUT("/produtos/:id/grupos-opcao", m.DefinirGruposOpcaoProduto)
+
+	autorizado.GET("/grupos-opcao", m.ListarGruposOpcao)
+	autorizado.POST("/grupos-opcao", m.CriarGrupoOpcao)
+	autorizado.PUT("/grupos-opcao/:id", m.AtualizarGrupoOpcao)
+	autorizado.DELETE("/grupos-opcao/:id", protecao.ExigirPapel("admin"), m.ExcluirGrupoOpcao)
+	autorizado.POST("/grupos-opcao/:id/opcoes", m.CriarOpcao)
+	autorizado.PUT("/opcoes/:id", m.AtualizarOpcao)
+	autorizado.DELETE("/opcoes/:id", protecao.ExigirPapel("admin"), m.ExcluirOpcao)
 
 	autorizado.GET("/insumos", m.ListarInsumos)
 	autorizado.POST("/insumos", m.CriarInsumo)

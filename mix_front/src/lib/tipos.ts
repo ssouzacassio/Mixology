@@ -5,6 +5,31 @@ export type Produto = {
   categoria: string;
   preco: number;
   ativo: boolean;
+  grupos_opcao?: { grupo_opcao_id: string; grupo_opcao?: GrupoOpcao }[];
+};
+
+export type Insumo = {
+  id: string;
+  nome: string;
+  unidade: string;
+  quantidade_estoque: number;
+  quantidade_minima: number;
+  custo_por_unidade: number;
+};
+
+export type Opcao = {
+  id: string;
+  grupo_opcao_id: string;
+  nome: string;
+  insumo_id?: string;
+  insumo?: Insumo;
+  quantidade: number;
+};
+
+export type GrupoOpcao = {
+  id: string;
+  nome: string;
+  opcoes: Opcao[];
 };
 
 export type Mesa = {
@@ -32,6 +57,7 @@ export type ItemVenda = {
   produto_id: string;
   quantidade: number;
   preco_unitario: number;
+  opcoes?: { opcao_id: string; opcao?: Opcao & { grupo_opcao?: GrupoOpcao } }[];
 };
 
 export type Boleto = {
